@@ -91,8 +91,7 @@ class Response(val status: Status = OK, val headers: Headers = Headers(),
         response.setStatus(status.code)
         headers.contentType.foreach { cType => response.setContentType(cType.toString) }
         
-        headers.fields.foreach { case (headerName, values) => 
-                values.foreach { response.addHeader(headerName, _) } }
+        headers.fields.foreach { case (headerName, value) => response.addHeader(headerName, value) }
         
         if (writeBody.isDefined)
         {

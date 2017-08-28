@@ -18,18 +18,22 @@ object Headers extends FromModelFactory[Headers]
 {   
     override def apply(model: template.Model[Property]) = 
     {
+        // TODO: Handle cases where values are not strings
         val fields = model.attributesWithValue.map { property => (property.name, 
-                property.value.vectorOr().flatMap { _.string }) }.toMap
+                property.value.stringOr()) }.toMap
         Some(new Headers(fields))
     }
 }
+
+// TODO: Headers are usually separated with commas and even then there are exceptions
+// Create a better handling for these cases
 
 /**
  * Headers represent headers used in html responses and requests
  * @author Mikko Hilpinen
  * @since 22.8.2017
  */
-case class Headers(val fields: Map[String, Seq[String]] = HashMap()) extends ModelConvertible
+case class Headers(val fields: Map[String, String] = HashMap()) extends ModelConvertible
 {
     // IMPLEMENTED METHODS    -----
     
@@ -42,17 +46,17 @@ case class Headers(val fields: Map[String, Seq[String]] = HashMap()) extends Mod
     /**
      * The methods allowed for the server resource
      */
-    def allowedMethods = apply("Allow").flatMap { Method.parse }
+    def allowedMethods = commaSeparatedValues("Allow").flatMap { Method.parse }
     
     /**
      * The content types accepted by the client
      */
-    def acceptedTypes = apply("Accept").flatMap { ContentType.parse }
+    def acceptedTypes = commaSeparatedValues("Accept").flatMap { ContentType.parse }
     
     /**
      * The type of the associated content. None if not defined.
      */
-    def contentType = firstValue("Content-Type").flatMap { ContentType.parse }
+    def contentType = apply("Content-Type").flatMap { ContentType.parse }
     
     /**
      * The Date general-header field represents the date and time at which the message was 
@@ -75,59 +79,82 @@ case class Headers(val fields: Map[String, Seq[String]] = HashMap()) extends Mod
     // OPERATORS    ---------------
     
     /**
-     * Finds the values associated with the specified header name. If there are no values, returns 
-     * an empty collection
+     * Finds the value associated with the specified header name. The value may contain multiple 
+     * parts, depending from the header format. Returns None if the header has no value.
      */
-    def apply(headerName: String) = fields.getOrElse(headerName, Vector())
+    def apply(headerName: String) = fields.get(headerName)
     
     /**
      * Adds new values to a header. Will not overwrite any existing values.
      */
-    def +(headerName: String, values: Seq[String]) = 
+    def +(headerName: String, values: Seq[String], regex: String): Headers = 
     {
-        if (fields.contains(headerName))
+        if (!values.isEmpty)
         {
-            // Appends to existing values
-            val newValues = apply(headerName) ++ values
-            Headers(fields + (headerName -> newValues))
+            this + (headerName, values.reduce { _ + regex + _ })
         }
         else
         {
-            withHeader(headerName, values)
+            this
         }
     }
     
     /**
      * Adds a new value to a header. Will not overwrite any existing values.
      */
-    def +(headerName: String, value: String): Headers = this + (headerName, Vector(value))
+    def +(headerName: String, value: String, regex: String = ",") = 
+    {
+        if (fields.contains(headerName))
+        {
+            // Appends to existing value
+            val newValue = apply(headerName).get + regex + value
+            Headers(fields + (headerName -> newValue))
+        }
+        else
+        {
+            withHeader(headerName, value)
+        }
+    }
     
     
     
     // OTHER METHODS    -----------
     
     /**
-     * The first value associated with the specified header name
+     * Returns multiple values where the original value is split into multiple parts. Returns an 
+     * empty vector if there were no values for the header name
      */
-    def firstValue(headerName: String) = fields.get(headerName).flatMap { _.headOption }
+    def splitValues(headerName: String, regex: String) = apply(headerName).toVector.flatMap { _.split(regex) }
+    
+    /**
+     * Returns multiple values where the original value is separated with a comma (,). Returns an 
+     * empty vector if there were no values for the header name
+     */
+    def commaSeparatedValues(headerName: String) = splitValues(headerName, ",")
+    
+    /**
+     * Returns multiple values where the original value is separated with a semicolon (;). Returns an 
+     * empty vector if there were no values for the header name
+     */
+    def semicolonSeparatedValues(headerName: String) = splitValues(headerName, ";")
     
     /**
      * Returns a copy of these headers with a new header. Overwrites any previous values on the 
      * targeted header.
      */
-    def withHeader(headerName: String, values: Seq[String]) = new Headers(fields + (headerName -> values))
+    def withHeader(headerName: String, values: Seq[String], regex: String = ","): Headers = 
+            withHeader(headerName, values.reduce { _ + regex + _ })
     
     /**
      * Returns a copy of these headers with a new header. Overwrites any previous values on the 
      * targeted header.
      */
-    def withHeader(headerName: String, value: String, more: String*): Headers = 
-            withHeader(headerName, value +: more);
+    def withHeader(headerName: String, value: String) = new Headers(fields + (headerName -> value))
     
     /**
      * Parses a header field into a time instant
      */
-    def timeHeader(headerName: String) = firstValue(headerName).flatMap { dateStr => 
+    def timeHeader(headerName: String) = apply(headerName).flatMap { dateStr => 
             Try(Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(dateStr))).toOption }
     
     /**
@@ -194,5 +221,6 @@ case class Headers(val fields: Map[String, Seq[String]] = HashMap()) extends Mod
      * - Expires (?)
      * - Location
      * - Set-Cookie
+     * - If-Modified-Since
      */
 }
