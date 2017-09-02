@@ -11,12 +11,17 @@ import utopia.flow.generic.DataType
 import utopia.flow.generic.StringType
 import collection.JavaConverters._
 import util.NullSafe._
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
+import javax.servlet.annotation.MultipartConfig
 
 /**
  * This servlet implementation uses scala instead of java
  * @author Mikko Hilpinen
  * @since 21.8.2017
  */
+@MultipartConfig
 class ScalaServlet extends HttpServlet
 {
     // IMPLEMENTED METHODS    ----------------
@@ -31,13 +36,28 @@ class ScalaServlet extends HttpServlet
         val parameterNames = request.getParameterNames.asScala.toVector
         val headerNames = request.getHeaderNames.asScala.toVector
         
-        val parameterStr = parameterNames.reduceOption { (str, pName) => 
+        val parameterStr = parameterNames.foldLeft("") { (str, pName) => 
                 str + s", $pName = ${ request.getParameter(pName) }" }
         val headerStr = headerNames.reduceOption { (str, hName) => 
                 str + s", $hName = ${ request.getHeader(hName) }" }
         
+        val parts = Try(request.getParts).map { _.asScala.map { part => 
+                s"${ part.getName } (${ part.getContentType })" } }
+        
+        val partString = parts match 
+        {
+            case Success(partIterable) => partIterable.foldLeft("") { _ + ", " + _ }
+            case Failure(t) => t.getMessage
+        }
+        //if (parts.isSuccess) parts.get.foldLeft("") { _ + ", " + _ } else ""
+        
         val body = Model(Vector("Method" -> method, "uri" -> uri, "Content-Type" -> cType, 
-                "Parameters" -> parameterStr, "Headers" -> headerStr))
+                "Parameters" -> parameterStr, "Headers" -> headerStr, "Parts" -> partString))
         Response(body).update(response)
     }
+    
+    override def doPost(request: HttpServletRequest, response: HttpServletResponse) = doGet(request, response)
+    override def doPut(request: HttpServletRequest, response: HttpServletResponse) = doGet(request, response)
+    override def doDelete(request: HttpServletRequest, response: HttpServletResponse) = doGet(request, response)
+    override def doHead(request: HttpServletRequest, response: HttpServletResponse) = doGet(request, response)
 }

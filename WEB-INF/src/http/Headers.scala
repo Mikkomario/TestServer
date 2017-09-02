@@ -25,8 +25,7 @@ object Headers extends FromModelFactory[Headers]
     }
 }
 
-// TODO: Headers are usually separated with commas and even then there are exceptions
-// Create a better handling for these cases
+// TODO: Make header value get case-insensitive
 
 /**
  * Headers represent headers used in html responses and requests
