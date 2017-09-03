@@ -12,18 +12,16 @@ import http.ContentCategory.Application
 
 object Response
 {
-    // OPERATORS    ---------------------
+    // OTHER METHODS    ----------------
     
     /**
      * Wraps a model body into a JSON response
      * @param body the model that forms the body of the response
      * @param status the status of the response
      */
-    def apply(body: Model[Property], status: Status = OK) = new Response(status, 
-            Headers().withContentType(Application/"json"), Some(writeString(body.toJSON, _)))
-    
-    
-    // OTHER METHODS    ----------------
+    def fromModel(body: Model[Property], status: Status = OK, setCookies: Seq[Cookie] = Vector()) = 
+            new Response(status, Headers().withContentType(Application/"json"), setCookies, 
+                    Some(writeString(body.toJSON, _)))
     
     /**
      * Wraps a file into a response
@@ -32,13 +30,14 @@ object Response
      * attempt to guess the content type based on the file name.
      * @param status The status for the response. Default OK (200)
      */
-    def fromFile(filePath: file.Path, contentType: Option[ContentType] = None, status: Status = OK) = 
+    def fromFile(filePath: file.Path, contentType: Option[ContentType] = None, status: Status = OK, 
+            setCookies: Seq[Cookie] = Vector()) = 
     {
         if (Files.exists(filePath) && !Files.isDirectory(filePath))
         {
             val contentType = ContentType.guessFrom(filePath.getFileName.toString())
             val headers = if (contentType.isDefined) Headers().withContentType(contentType.get) else Headers()
-            new Response(status, headers, Some(Files.copy(filePath, _)))
+            new Response(status, headers, setCookies, Some(Files.copy(filePath, _)))
         }
         else
         {
@@ -71,16 +70,24 @@ object Response
  * @param contentType the content type of this response. None by default.
  * @param writeBody a function that writes the response body into a stream. None by default.
  */
-class Response(val status: Status = OK, val headers: Headers = Headers(), 
-        writeBody: Option[OutputStream => Unit] = None)
+case class Response(val status: Status = OK, val headers: Headers = Headers(), 
+        val setCookies: Seq[Cookie] = Vector(), writeBody: Option[OutputStream => Unit] = None)
 {
+    // OPERATORS    --------------------
+    
+    /**
+     * Creates a new response with a cookie added to it
+     */
+    def +(cookie: Cookie) = copy(setCookies = setCookies :+ cookie)
+    
+    
     // OTHER METHODS    ----------------
     
     /**
      * Creates a new response with modified headers. The headers are modified in the provided 
      * function
      */
-    def withModifiedHeaders(modify: Headers => Headers) = new Response(status, modify(headers), writeBody)
+    def withModifiedHeaders(modify: Headers => Headers) = copy(headers = modify(headers))
     
     /**
      * Updates the contents of a servlet response to match those of this response

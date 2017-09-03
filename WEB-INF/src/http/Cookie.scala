@@ -44,6 +44,4 @@ case class Cookie(val name: String, val value: Value, val lifeLimitSeconds: Opti
     
     override def toModel = Model(Vector("name" -> name, "value" -> value, 
             "life_limit_seconds" -> lifeLimitSeconds, "secure" -> isSecure));
-    
-    // TODO: Add jsonValue property
 }

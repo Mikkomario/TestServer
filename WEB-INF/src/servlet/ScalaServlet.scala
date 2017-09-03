@@ -54,7 +54,7 @@ class ScalaServlet extends HttpServlet
         
         val body = Model(Vector("Method" -> method, "uri" -> uri, "url" -> url, "Content-Type" -> cType, 
                 "Parameters" -> parameterStr, "Headers" -> headerStr, "Parts" -> partString))
-        Response(body).update(response)
+        Response.fromModel(body).update(response)
     }
     
     override def doPost(request: HttpServletRequest, response: HttpServletResponse) = doGet(request, response)

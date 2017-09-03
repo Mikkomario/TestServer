@@ -34,7 +34,7 @@ class AnkkaServlet extends HttpServlet
         else
         {
             val body = Model(Vector("Server Path" -> Paths.get(".").toAbsolutePath().toString()))
-            Response(body, NotFound).update(response)
+            Response.fromModel(body, NotFound).update(response)
         }
     }
 }
