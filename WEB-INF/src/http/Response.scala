@@ -100,6 +100,15 @@ case class Response(val status: Status = OK, val headers: Headers = Headers(),
         
         headers.fields.foreach { case (headerName, value) => response.addHeader(headerName, value) }
         
+        setCookies.foreach( cookie => 
+        {
+            val javaCookie = new javax.servlet.http.Cookie(cookie.name, cookie.value.toJSON)
+            cookie.lifeLimitSeconds.foreach { javaCookie.setMaxAge(_) }
+            javaCookie.setSecure(cookie.isSecure)
+            
+            response.addCookie(javaCookie)
+        })
+        
         if (writeBody.isDefined)
         {
             val stream = response.getOutputStream
