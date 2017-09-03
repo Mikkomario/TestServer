@@ -32,6 +32,7 @@ class ScalaServlet extends HttpServlet
         
         val method = request.getMethod.toOption
         val uri = request.getRequestURI.toOption
+        val url = request.getRequestURL.toString()
         val cType = request.getContentType.toOption
         val parameterNames = request.getParameterNames.asScala.toVector
         val headerNames = request.getHeaderNames.asScala.toVector
@@ -51,7 +52,7 @@ class ScalaServlet extends HttpServlet
         }
         //if (parts.isSuccess) parts.get.foldLeft("") { _ + ", " + _ } else ""
         
-        val body = Model(Vector("Method" -> method, "uri" -> uri, "Content-Type" -> cType, 
+        val body = Model(Vector("Method" -> method, "uri" -> uri, "url" -> url, "Content-Type" -> cType, 
                 "Parameters" -> parameterStr, "Headers" -> headerStr, "Parts" -> partString))
         Response(body).update(response)
     }

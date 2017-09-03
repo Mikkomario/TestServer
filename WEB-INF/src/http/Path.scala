@@ -18,7 +18,7 @@ object Path
      * Parses a path from a string representation
      * @param pathString a string representation of a path. Eg. 'foo/bar'
      */
-    def parse(pathString: String) = Path(pathString.split("/"))
+    def parse(pathString: String) = Path(pathString.split("/").filterNot { _.isEmpty() })
 }
 
 /**

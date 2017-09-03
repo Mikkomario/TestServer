@@ -13,6 +13,7 @@ import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.ZoneOffset
 import scala.collection.immutable.HashMap
+import utopia.flow.util.Equatable
 
 object Headers extends FromModelFactory[Headers]
 {   
@@ -23,21 +24,27 @@ object Headers extends FromModelFactory[Headers]
                 property.value.stringOr()) }.toMap
         Some(new Headers(fields))
     }
+    
+    def apply(rawFields: Map[String, String] = HashMap()) = new Headers(rawFields)
 }
-
-// TODO: Make header value get case-insensitive
 
 /**
  * Headers represent headers used in html responses and requests
  * @author Mikko Hilpinen
  * @since 22.8.2017
  */
-case class Headers(val fields: Map[String, String] = HashMap()) extends ModelConvertible
+class Headers(rawFields: Map[String, String] = HashMap()) extends ModelConvertible with Equatable
 {
-    // IMPLEMENTED METHODS    -----
+    // ATTRIBUTES    --------------
     
-    def toModel = Model(fields.toVector.map { case (key, values) => (key, 
-            values.toVector.map { _.toValue }.toValue) });
+    val fields = rawFields.map { case (key, value) => key.toLowerCase() -> value }
+    
+    
+    // IMPLEMENTED METHODS / PROPERTIES    ---
+    
+    override def properties = Vector(fields)
+    
+    override def toModel = Model(fields.toVector.map { case (key, value) => key -> value.toValue });
     
     
     // COMPUTED PROPERTIES    -----
@@ -81,7 +88,7 @@ case class Headers(val fields: Map[String, String] = HashMap()) extends ModelCon
      * Finds the value associated with the specified header name. The value may contain multiple 
      * parts, depending from the header format. Returns None if the header has no value.
      */
-    def apply(headerName: String) = fields.get(headerName)
+    def apply(headerName: String) = fields.get(headerName.toLowerCase())
     
     /**
      * Adds new values to a header. Will not overwrite any existing values.
@@ -103,7 +110,7 @@ case class Headers(val fields: Map[String, String] = HashMap()) extends ModelCon
      */
     def +(headerName: String, value: String, regex: String = ",") = 
     {
-        if (fields.contains(headerName))
+        if (fields.contains(headerName.toLowerCase()))
         {
             // Appends to existing value
             val newValue = apply(headerName).get + regex + value
