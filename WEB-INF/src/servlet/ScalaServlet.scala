@@ -21,7 +21,12 @@ import javax.servlet.annotation.MultipartConfig
  * @author Mikko Hilpinen
  * @since 21.8.2017
  */
-@MultipartConfig
+@MultipartConfig(
+        fileSizeThreshold   = 1048576,  // 1 MB
+        maxFileSize         = 10485760, // 10 MB
+        maxRequestSize      = 20971520, // 20 MB
+        location            = "D:/Uploads"
+)
 class ScalaServlet extends HttpServlet
 {
     // IMPLEMENTED METHODS    ----------------

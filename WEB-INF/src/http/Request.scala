@@ -48,5 +48,7 @@ case class Request(val method: Method, val path: Path, val parameters: Model[Con
     // OTHER METHODS    ------------------------
     
     def cookieValue(cookieName: String) = cookies.find { _.name.toLowerCase() == 
-            cookieName.toLowerCase() }.map { _.value }.getOrElse(Value.empty())
+            cookieName.toLowerCase() }.map { _.value }.getOrElse(Value.empty());
+            
+    // TODO: Add file support
 }
