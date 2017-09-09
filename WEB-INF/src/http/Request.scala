@@ -39,8 +39,9 @@ object Request extends FromModelFactory[Request]
  * @author Mikko Hilpinen
  * @since 3.9.2017
  */
-class Request(val method: Method, val path: Path, val parameters: Model[Constant] = Model(Vector()), 
-        val headers: Headers = Headers(), rawCookies: Traversable[Cookie] = Vector(), 
+class Request(val method: Method, val path: Option[Path] = None, 
+        val parameters: Model[Constant] = Model(Vector()), val headers: Headers = Headers(), 
+        rawCookies: Traversable[Cookie] = Vector(), 
         rawFileUploads: Traversable[FileUpload] = Vector())
 {
     // ATTRIBUTES    ---------------------------

@@ -19,7 +19,7 @@ object Response
      * @param status the status of the response
      */
     def fromModel(body: Model[Property], status: Status = OK, setCookies: Seq[Cookie] = Vector()) = 
-            new Response(status, Headers().withContentType(Application/"json"), setCookies, 
+            new Response(status, Headers().withCurrentDate.withContentType(Application/"json"), setCookies, 
                     Some(writeString(body.toJSON, _)))
     
     /**
@@ -36,7 +36,7 @@ object Response
         {
             val contentType = ContentType.guessFrom(filePath.getFileName.toString())
             val headers = if (contentType.isDefined) Headers().withContentType(contentType.get) else Headers()
-            new Response(status, headers, setCookies, Some(Files.copy(filePath, _)))
+            new Response(status, headers.withCurrentDate, setCookies, Some(Files.copy(filePath, _)))
         }
         else
         {

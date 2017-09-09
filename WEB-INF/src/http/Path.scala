@@ -17,8 +17,13 @@ object Path
     /**
      * Parses a path from a string representation
      * @param pathString a string representation of a path. Eg. 'foo/bar'
+     * @return the parsed path. None if there was no parts on the path
      */
-    def parse(pathString: String) = Path(pathString.split("/").filterNot { _.isEmpty() })
+    def parse(pathString: String) = 
+    {
+        val path = Path(pathString.split("/").filterNot { _.isEmpty() })
+        if (path.parts.isEmpty) None else Some(path)
+    }
 }
 
 /**
@@ -56,7 +61,7 @@ case class Path(val parts: Seq[String])
     /**
      * Creates a new path with the specified element appended to the end
      */
-    def /(element: String): Path = this / Path.parse(element)
+    def /(element: String): Path = Path.parse(element).map(/).getOrElse(this) 
     
     
     // OTHER METHODS    -----------------------
@@ -69,7 +74,7 @@ case class Path(val parts: Seq[String])
     /**
      * Creates a new path with the specified element prepended to the beginning
      */
-    def prepend(element: String): Path = prepend(Path.parse(element))
+    def prepend(element: String): Path = Path.parse(element).map(prepend).getOrElse(this)
     
     /**
      * Drops the first n element from this path and returns the result

@@ -68,10 +68,11 @@ object HttpExtensions
         def toRequest(fileUploadPath: java.nio.file.Path) = 
         {
             val method = r.getMethod.toOption.flatMap(Method.parse)
-            val path = r.getRequestURI.toOption.map(Path.parse)
             
-            if (method.isDefined && path.isDefined)
+            if (method.isDefined)
             {
+                val path = r.getRequestURI.toOption.flatMap(Path.parse)
+                
                 // TODO: Add parameter decoding
                 val paramValues = r.getParameterNames.asScala.map { pName => 
                         (pName, JSONReader.parseValue(r.getParameter(pName))) }.flatMap { case (name, value) => 
@@ -91,7 +92,7 @@ object HttpExtensions
                         new FileUpload(fileUploadPath, part.getName, part.getSize, _, 
                         part.getSubmittedFileName, part.getInputStream, part.write) }}}
                 
-                Some(new Request(method.get, path.get, parameters, headers, cookies, 
+                Some(new Request(method.get, path, parameters, headers, cookies, 
                         uploads.getOrElse(Vector())))
             }
             else
