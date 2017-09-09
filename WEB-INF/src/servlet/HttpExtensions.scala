@@ -14,6 +14,10 @@ import utopia.flow.parse.JSONReader
 import http.Headers
 import utopia.flow.datastructure.immutable.Value
 import utopia.flow.generic.StringType
+import scala.util.Try
+import http.ContentType
+import http.FileUpload
+import http.Request
 
 /**
  * This object contains extensions that can be used with HttpServletRequest and HttpServletResponse 
@@ -61,24 +65,39 @@ object HttpExtensions
     
     implicit class ConvertibleRequest(val r: HttpServletRequest) extends AnyVal
     {
-        def toRequest = 
+        def toRequest(fileUploadPath: java.nio.file.Path) = 
         {
             val method = r.getMethod.toOption.flatMap(Method.parse)
             val path = r.getRequestURI.toOption.map(Path.parse)
             
-            // TODO: Add parameter decoding
-            val paramValues = r.getParameterNames.asScala.map { pName => 
-                    (pName, JSONReader.parseValue(r.getParameter(pName))) }.flatMap { case (name, value) => 
-                    if (value.isSuccess) Some(name, value.get) else None }
-            val parameters = Model(paramValues.toVector)
-            
-            val headers = Headers(r.getHeaderNames.asScala.map { hName => (hName, r.getHeader(hName)) }.toMap)
-            
-            val cookies = r.getCookies.map { javaCookie => Cookie(javaCookie.getName, 
-                    javaCookie.getValue.toOption.flatMap { 
-                    JSONReader.parseValue(_).toOption }.getOrElse(Value.empty(StringType)), 
-                    if (javaCookie.getMaxAge < 0) None else Some(javaCookie.getMaxAge), 
-                    javaCookie.getSecure) }
+            if (method.isDefined && path.isDefined)
+            {
+                // TODO: Add parameter decoding
+                val paramValues = r.getParameterNames.asScala.map { pName => 
+                        (pName, JSONReader.parseValue(r.getParameter(pName))) }.flatMap { case (name, value) => 
+                        if (value.isSuccess) Some(name, value.get) else None }
+                val parameters = Model(paramValues.toVector)
+                
+                val headers = Headers(r.getHeaderNames.asScala.map { hName => (hName, r.getHeader(hName)) }.toMap)
+                
+                val cookies = r.getCookies.map { javaCookie => Cookie(javaCookie.getName, 
+                        javaCookie.getValue.toOption.flatMap { 
+                        JSONReader.parseValue(_).toOption }.getOrElse(Value.empty(StringType)), 
+                        if (javaCookie.getMaxAge < 0) None else Some(javaCookie.getMaxAge), 
+                        javaCookie.getSecure) }
+                
+                val uploads = Try(r.getParts).toOption.map { _.asScala.flatMap {part => 
+                        part.getContentType.toOption.flatMap(ContentType.parse).map { 
+                        new FileUpload(fileUploadPath, part.getName, part.getSize, _, 
+                        part.getSubmittedFileName, part.getInputStream, part.write) }}}
+                
+                Some(new Request(method.get, path.get, parameters, headers, cookies, 
+                        uploads.getOrElse(Vector())))
+            }
+            else
+            {
+                None
+            }
         }
     }
 }
