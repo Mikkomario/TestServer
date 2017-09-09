@@ -8,7 +8,10 @@ import utopia.flow.generic.ValueConversions._
 import utopia.flow.generic.FromModelFactory
 import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
+import scala.collection.immutable.Map
+import scala.collection.immutable.HashMap
 
+/*
 object Request extends FromModelFactory[Request]
 {
     def apply(model: template.Model[Property]) = 
@@ -18,7 +21,7 @@ object Request extends FromModelFactory[Request]
         
         if (method.isDefined && path.isDefined)
         {
-            Some(Request(method.get, path.get, model("parameters").modelOr(), 
+            Some(new Request(method.get, path.get, model("parameters").modelOr(), 
                     model("headers").model.flatMap(Headers.apply).getOrElse(Headers()), 
                     model("cookies").vectorOr().flatMap { _.model }.flatMap { Cookie(_) }))
         }
@@ -28,6 +31,7 @@ object Request extends FromModelFactory[Request]
         }
     }
 }
+*/
 
 /**
  * A request represents an http request made from client side to server side. A request targets 
@@ -35,20 +39,27 @@ object Request extends FromModelFactory[Request]
  * @author Mikko Hilpinen
  * @since 3.9.2017
  */
-case class Request(val method: Method, val path: Path, val parameters: Model[Constant] = Model(Vector()), 
-        val headers: Headers = Headers(), val cookies: Seq[Cookie] = Vector()) extends ModelConvertible
+class Request(val method: Method, val path: Path, val parameters: Model[Constant] = Model(Vector()), 
+        val headers: Headers = Headers(), val fileUploads: Seq[FileUpload] = Vector(), 
+        rawCookies: Traversable[Cookie] = Vector())
 {
+    // ATTRIBUTES    ---------------------------
+    
+    val cookies = rawCookies.map { cookie => (cookie.name.toLowerCase(), cookie) }.toMap
+    
+    
     // IMPLEMENTED METHODS / PROPERTIES    -----
     
+    /*
     override def toModel = Model(Vector("method" -> method.name, "path" -> path.toString(), 
             "parameters" -> parameters, "headers" -> headers.toModel, 
-            "cookies" -> cookies.map { _.toModel }.toVector))
+            "cookies" -> cookies.values.map { _.toModel }.toVector)) */
     
     
     // OTHER METHODS    ------------------------
     
-    def cookieValue(cookieName: String) = cookies.find { _.name.toLowerCase() == 
-            cookieName.toLowerCase() }.map { _.value }.getOrElse(Value.empty());
+    def cookieValue(cookieName: String) = cookies.get(cookieName.toLowerCase()).map(
+            _.value).getOrElse(Value.empty());
             
     // TODO: Add file support
 }
