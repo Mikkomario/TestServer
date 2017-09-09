@@ -1,8 +1,16 @@
 package http
 
+import utopia.flow.datastructure.template.Model
+import utopia.flow.datastructure.template.Property
+
 trait Resource
 {
     // ABSTRACT PROPERTIES & METHODS ------------------
+    
+    /**
+     * The name of this resource
+     */
+    def name: String
     
     /**
      * The methods this resource supports
@@ -10,27 +18,15 @@ trait Resource
     def allowedMethods: Traversable[Method]
     
     /**
-     * Finds the next resource while moving along the provided path
-     * @path a path starting from this resource
-     * @return the next resource along the path or None if no such resource was found
+     * Performs an operation on this resource and forms a response. The resource may expect that 
+     * this method will only be called with methods that are allowed by the resource.
      */
-    def findNext(path: Path): Option[Resource]
-    
-    // def perform(request: Request): Response
-    
-    
-    // OTHER METHODS    ------------------------------
+    def toResponse(method: Method, parameters: Model[Property], headers: Headers, 
+            cookies: Map[String, Cookie], uploads: Map[String, FileUpload]): Response
     
     /**
-     * Finds the resource at the end of the provided path, if there is one
-     * @path a path starting from this resource
-     * @return the resource at the end of the path that starts from this resource. None if no 
-     * such resource could be found
+     * Follows the path to a new resource. Returns a result suitable for the situation.
      */
-    def find(path: Path): Option[Resource] = 
-    {
-        lazy val remainingPath = path.tail
-        findNext(path).flatMap { next => 
-                if (remainingPath.isDefined) next.find(remainingPath.get) else Some(next) }
-    }
+    def follow(path: Path, headers: Headers, parameters: Model[Property], 
+            cookies: Map[String, Cookie]): ResourceSearchResult
 }

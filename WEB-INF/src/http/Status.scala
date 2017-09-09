@@ -60,6 +60,14 @@ object Accepted extends Status("Accepted", 202, Success)
 object NoContent extends Status("No Content", 204, Success)
 
 /**
+ * If the client has performed a conditional GET request and access is allowed, but the document 
+ * has not been modified, the server SHOULD respond with this status code. The 304 response 
+ * MUST NOT contain a message-body, and thus is always terminated by the first empty line after the 
+ * header fields.
+ */
+object NotModified extends Status("Not Modified", 304, Redirect)
+
+/**
  * The request could not be understood by the server due to malformed syntax. The client SHOULD NOT 
  * repeat the request without modifications.
  */

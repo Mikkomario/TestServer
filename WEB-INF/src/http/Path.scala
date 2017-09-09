@@ -38,7 +38,7 @@ case class Path(val parts: Seq[String])
     /**
      * The remaining portion of the path after the first element
      */
-    def tail = if (parts.size > 1) Some(Path(parts.tail)) else None
+    def tail = drop(1)
     
     
     // IMPLEMENTED METHODS    -----------------
@@ -49,15 +49,30 @@ case class Path(val parts: Seq[String])
     // OPERATORS    ---------------------------
     
     /**
+     * Creates a new path with the specified path added to the end
+     */
+    def /(path: Path) = Path(parts ++ path.parts)
+    
+    /**
      * Creates a new path with the specified element appended to the end
      */
-    def /(element: String) = Path(parts :+ element)
+    def /(element: String): Path = this / Path.parse(element)
     
     
     // OTHER METHODS    -----------------------
     
     /**
+     * Creates a new path with the specified path prepended to the beginning
+     */
+    def prepend(path: Path) = Path(path.parts ++ parts)
+    
+    /**
      * Creates a new path with the specified element prepended to the beginning
      */
-    def prepend(element: String) = Path(element +: parts)
+    def prepend(element: String): Path = prepend(Path.parse(element))
+    
+    /**
+     * Drops the first n element from this path and returns the result
+     */
+    def drop(n: Int) = if (n >= parts.size) None else Some(Path(parts.drop(n)))
 }

@@ -220,13 +220,11 @@ class Headers(rawFields: Map[String, String] = HashMap()) extends ModelConvertib
     /*
      * - Accept-Charset
      * - Accept-Language (?)
-     * - Cookie
      * - Content-Length (?)
      * - Content-Encoding
      * - Content-Language
      * - Expires (?)
      * - Location
-     * - Set-Cookie
      * - If-Modified-Since
      */
 }
