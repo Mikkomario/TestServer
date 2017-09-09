@@ -9,6 +9,11 @@ import http.Cookie
 import http.Method
 import http.Path
 import utopia.flow.datastructure.immutable.Model
+import jdk.nashorn.internal.parser.JSONParser
+import utopia.flow.parse.JSONReader
+import http.Headers
+import utopia.flow.datastructure.immutable.Value
+import utopia.flow.generic.StringType
 
 /**
  * This object contains extensions that can be used with HttpServletRequest and HttpServletResponse 
@@ -62,8 +67,18 @@ object HttpExtensions
             val path = r.getRequestURI.toOption.map(Path.parse)
             
             // TODO: Add parameter decoding
-            // TODO: Also, should parameter values be parsed form json?
-            // val parameters = Model(r.getParameterNames.asScala.map {  })
+            val paramValues = r.getParameterNames.asScala.map { pName => 
+                    (pName, JSONReader.parseValue(r.getParameter(pName))) }.flatMap { case (name, value) => 
+                    if (value.isSuccess) Some(name, value.get) else None }
+            val parameters = Model(paramValues.toVector)
+            
+            val headers = Headers(r.getHeaderNames.asScala.map { hName => (hName, r.getHeader(hName)) }.toMap)
+            
+            val cookies = r.getCookies.map { javaCookie => Cookie(javaCookie.getName, 
+                    javaCookie.getValue.toOption.flatMap { 
+                    JSONReader.parseValue(_).toOption }.getOrElse(Value.empty(StringType)), 
+                    if (javaCookie.getMaxAge < 0) None else Some(javaCookie.getMaxAge), 
+                    javaCookie.getSecure) }
         }
     }
 }
