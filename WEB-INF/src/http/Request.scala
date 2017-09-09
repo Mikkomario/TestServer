@@ -40,12 +40,20 @@ object Request extends FromModelFactory[Request]
  * @since 3.9.2017
  */
 class Request(val method: Method, val path: Path, val parameters: Model[Constant] = Model(Vector()), 
-        val headers: Headers = Headers(), val fileUploads: Seq[FileUpload] = Vector(), 
-        rawCookies: Traversable[Cookie] = Vector())
+        val headers: Headers = Headers(), rawCookies: Traversable[Cookie] = Vector(), 
+        rawFileUploads: Traversable[FileUpload] = Vector())
 {
     // ATTRIBUTES    ---------------------------
     
+    /**
+     * The cookies provided with the request. All keys are cookie names in lower case letters
+     */
     val cookies = rawCookies.map { cookie => (cookie.name.toLowerCase(), cookie) }.toMap
+    /**
+     * The file uploads provided with the request. All keys are parameter / part names in lower case 
+     * letters
+     */
+    val fileUploads = rawFileUploads.map { upload => (upload.name.toLowerCase(), upload) }.toMap
     
     
     // IMPLEMENTED METHODS / PROPERTIES    -----
