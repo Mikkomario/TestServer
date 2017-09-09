@@ -1,4 +1,8 @@
-package http
+package rest
+
+import http.NotFound
+import http.Path
+import http.Status
 
 /**
  * There are different types of results that can be get when following a path alongside resources. 

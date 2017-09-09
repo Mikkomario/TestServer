@@ -1,7 +1,13 @@
-package http
+package rest
 
 import utopia.flow.datastructure.template.Model
 import utopia.flow.datastructure.template.Property
+import http.Cookie
+import http.FileUpload
+import http.Headers
+import http.Method
+import http.Path
+import http.Response
 
 trait Resource
 {
