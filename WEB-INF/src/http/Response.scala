@@ -1,6 +1,5 @@
 package http
 
-import javax.servlet.http.HttpServletResponse
 import java.io.PrintWriter
 import utopia.flow.datastructure.template.Model
 import utopia.flow.datastructure.template.Property
@@ -89,38 +88,4 @@ class Response(val status: Status = OK, val headers: Headers = Headers(),
      */
     def withModifiedHeaders(modify: Headers => Headers) = new Response(status, modify(headers), 
             setCookies, writeBody)
-    
-    /**
-     * Updates the contents of a servlet response to match those of this response
-     */
-    // TODO: You probably want to move this elsewhere to avoid dependencies
-    def update(response: HttpServletResponse) = 
-    {
-        response.setStatus(status.code)
-        headers.contentType.foreach { cType => response.setContentType(cType.toString) }
-        
-        headers.fields.foreach { case (headerName, value) => response.addHeader(headerName, value) }
-        
-        setCookies.foreach( cookie => 
-        {
-            val javaCookie = new javax.servlet.http.Cookie(cookie.name, cookie.value.toJSON)
-            cookie.lifeLimitSeconds.foreach { javaCookie.setMaxAge(_) }
-            javaCookie.setSecure(cookie.isSecure)
-            
-            response.addCookie(javaCookie)
-        })
-        
-        if (writeBody.isDefined)
-        {
-            val stream = response.getOutputStream
-            try
-            {
-                writeBody.get(stream)
-            }
-            finally
-            {
-                try { stream.flush() } finally { stream.close() }
-            }
-        }
-    }
 }

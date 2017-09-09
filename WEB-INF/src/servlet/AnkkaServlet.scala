@@ -11,6 +11,7 @@ import http.Response
 import java.nio.file.Paths
 import java.nio.file.Files
 import http.NotFound
+import servlet.HttpExtensions._
 
 /**
  * This servlet implementation uses scala instead of java

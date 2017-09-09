@@ -68,6 +68,4 @@ class Request(val method: Method, val path: Path, val parameters: Model[Constant
     
     def cookieValue(cookieName: String) = cookies.get(cookieName.toLowerCase()).map(
             _.value).getOrElse(Value.empty());
-            
-    // TODO: Add file support
 }
