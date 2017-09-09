@@ -10,7 +10,7 @@ import http.Response
 import utopia.flow.generic.DataType
 import utopia.flow.generic.StringType
 import collection.JavaConverters._
-import util.NullSafe._
+import utopia.flow.util.NullSafe._
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure

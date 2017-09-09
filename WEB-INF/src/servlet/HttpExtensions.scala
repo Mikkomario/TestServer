@@ -1,7 +1,14 @@
 package servlet
 
+import utopia.flow.util.NullSafe._
+import collection.JavaConverters._
 import javax.servlet.http.HttpServletResponse
 import http.Response
+import javax.servlet.http.HttpServletRequest
+import http.Cookie
+import http.Method
+import http.Path
+import utopia.flow.datastructure.immutable.Model
 
 /**
  * This object contains extensions that can be used with HttpServletRequest and HttpServletResponse 
@@ -44,6 +51,19 @@ object HttpExtensions
                     try { stream.flush() } finally { stream.close() }
                 }
             }
+        }
+    }
+    
+    implicit class ConvertibleRequest(val r: HttpServletRequest) extends AnyVal
+    {
+        def toRequest = 
+        {
+            val method = r.getMethod.toOption.flatMap(Method.parse)
+            val path = r.getRequestURI.toOption.map(Path.parse)
+            
+            // TODO: Add parameter decoding
+            // TODO: Also, should parameter values be parsed form json?
+            // val parameters = Model(r.getParameterNames.asScala.map {  })
         }
     }
 }
