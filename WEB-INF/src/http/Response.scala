@@ -70,15 +70,15 @@ object Response
  * @param contentType the content type of this response. None by default.
  * @param writeBody a function that writes the response body into a stream. None by default.
  */
-case class Response(val status: Status = OK, val headers: Headers = Headers(), 
-        val setCookies: Seq[Cookie] = Vector(), writeBody: Option[OutputStream => Unit] = None)
+class Response(val status: Status = OK, val headers: Headers = Headers(), 
+        val setCookies: Seq[Cookie] = Vector(), val writeBody: Option[OutputStream => Unit] = None)
 {
     // OPERATORS    --------------------
     
     /**
      * Creates a new response with a cookie added to it
      */
-    def +(cookie: Cookie) = copy(setCookies = setCookies :+ cookie)
+    def +(cookie: Cookie) = new Response(status, headers, setCookies :+ cookie, writeBody)
     
     
     // OTHER METHODS    ----------------
@@ -87,7 +87,8 @@ case class Response(val status: Status = OK, val headers: Headers = Headers(),
      * Creates a new response with modified headers. The headers are modified in the provided 
      * function
      */
-    def withModifiedHeaders(modify: Headers => Headers) = copy(headers = modify(headers))
+    def withModifiedHeaders(modify: Headers => Headers) = new Response(status, modify(headers), 
+            setCookies, writeBody)
     
     /**
      * Updates the contents of a servlet response to match those of this response
