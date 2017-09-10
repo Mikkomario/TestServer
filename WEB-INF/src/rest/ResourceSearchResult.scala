@@ -7,6 +7,7 @@ import http.Response
 import http.Headers
 import http.ContentCategory.Text
 import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 /**
  * There are different types of results that can be get when following a path alongside resources. 
@@ -39,11 +40,12 @@ final case class Redirected(newPath: Path) extends ResourceSearchResult
  */
 final case class Error(val status: Status = NotFound, val message: Option[String] = None) extends ResourceSearchResult
 {
-    /* TODO: Finish once charsets are added to headers
-    def toResponse(charSet: Charset) = 
+    def toResponse(charset: Charset = StandardCharsets.UTF_8) = 
     {
-        val headers = (if (message.isDefined) Headers().withContentType(Text/"plain") else Headers()).withCurrentDate
-        // TODO: Add encoding
-        new Response(status, headers, Vector(), message.map { message => _.write(message.getBytes) })
-    }*/
+        val headers = (if (message.isDefined) Headers().withContentType(Text/"plain", 
+                Some(charset)) else Headers()).withCurrentDate
+        new Response(status, headers, Vector(), message.map { message => _.write(message.getBytes(charset)) })
+    }
 }
+
+// TODO: Add contextRequest

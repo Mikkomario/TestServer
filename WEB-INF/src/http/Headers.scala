@@ -14,6 +14,7 @@ import java.time.ZonedDateTime
 import java.time.ZoneOffset
 import scala.collection.immutable.HashMap
 import utopia.flow.util.Equatable
+import java.nio.charset.Charset
 
 object Headers extends FromModelFactory[Headers]
 {   
@@ -62,7 +63,23 @@ class Headers(rawFields: Map[String, String] = HashMap()) extends ModelConvertib
     /**
      * The type of the associated content. None if not defined.
      */
-    def contentType = apply("Content-Type").flatMap { ContentType.parse }
+    def contentType = semicolonSeparatedValues("Content-Type").headOption.flatMap { ContentType.parse }
+    
+    /**
+     * The character set used in the associated content. None if not defined or unrecognised
+     */
+    def charset = 
+    {
+        val cTypeHeader = semicolonSeparatedValues("Content-Type")
+        if (cTypeHeader.size > 1)
+        {
+            Try(Charset.forName(cTypeHeader(1))).toOption
+        }
+        else
+        {
+            None
+        }
+    }
     
     /**
      * The Date general-header field represents the date and time at which the message was 
@@ -201,9 +218,12 @@ class Headers(rawFields: Map[String, String] = HashMap()) extends ModelConvertib
     def withTypeAccepted(contentType: ContentType) = this + ("Accept", contentType.toString)
     
     /**
-     * Creates a new headers with the content type specified
+     * Creates a new headers with the content type (and character set) specified
+     * @param contentType the type of the content
+     * @param charset then encoding that was used used when the content was written to the response
      */
-    def withContentType(contentType: ContentType) = this + ("Content-Type", contentType.toString)
+    def withContentType(contentType: ContentType, charset: Option[Charset] = None) = this + 
+            ("Content-Type", contentType.toString + charset.map { ";" + _.name() }.getOrElse(""));
     
     /**
      * Creates a new header with the time when the message associated with this header was originated. 

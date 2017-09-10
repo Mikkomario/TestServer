@@ -8,19 +8,20 @@ import java.nio.file
 import java.nio.file.Files
 import utopia.flow.datastructure.immutable
 import http.ContentCategory.Application
+import java.nio.charset.StandardCharsets
 
 object Response
 {
     // OTHER METHODS    ----------------
     
     /**
-     * Wraps a model body into a JSON response
+     * Wraps a model body into an UTF-8 encoded JSON response
      * @param body the model that forms the body of the response
      * @param status the status of the response
      */
     def fromModel(body: Model[Property], status: Status = OK, setCookies: Seq[Cookie] = Vector()) = 
             new Response(status, Headers().withCurrentDate.withContentType(Application/"json"), setCookies, 
-                    Some(writeString(body.toJSON, _)))
+                    Some(_.write(body.toJSON.getBytes(StandardCharsets.UTF_8))))
     
     /**
      * Wraps a file into a response
@@ -41,22 +42,6 @@ object Response
         else
         {
             new Response(NotFound)
-        }
-    }
-    
-    /**
-     * Writes a string to the output stream. Can be used in the writeBody function
-     */
-    def writeString(string: String, stream: OutputStream) = 
-    {
-        val writer = new PrintWriter(stream)
-        try
-        {
-            writer.write(string)
-        }
-        finally
-        {
-            writer.close
         }
     }
 }
