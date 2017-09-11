@@ -16,10 +16,10 @@ import java.nio.charset.StandardCharsets
 sealed trait ResourceSearchResult
 
 /**
- * Found means that the final resource has been found and the path doesn't need to be followed 
- * anymore
+ * Ready means that the resource is ready to fulfil the request and form the response
+ * @param remainingPath the path that is still left to cover, if there is any
  */
-final case class Found(val resource: Resource) extends ResourceSearchResult
+final case class Ready(val remainingPath: Option[Path] = None) extends ResourceSearchResult
 
 /**
  * Follow means that the next resource was found but there is still some path to cover. A follow 
@@ -27,13 +27,13 @@ final case class Found(val resource: Resource) extends ResourceSearchResult
  * @param resource The next resource on the path
  * @param remainingPath The path remaining after the provided resource
  */
-final case class Follow(val resource: Resource, remainingPath: Path) extends ResourceSearchResult
+final case class Follow(val resource: Resource, val remainingPath: Path) extends ResourceSearchResult
 
 /**
  * A redirect is returned when a link is found and must be followed using a separate path
  * @param newPath The new path to follow to the original destination resource
  */
-final case class Redirected(newPath: Path) extends ResourceSearchResult
+final case class Redirected(val newPath: Path) extends ResourceSearchResult
 
 /**
  * An error is returned when the next resource is not found or is otherwise not available

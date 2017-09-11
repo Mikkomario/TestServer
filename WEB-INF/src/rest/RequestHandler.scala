@@ -18,6 +18,7 @@ import utopia.flow.datastructure.immutable.Model
 class RequestHandler(val serverAddress: String, val childResources: Traversable[Resource], 
         val path: Option[Path] = None)
 {
+    // TODO: Send serverAddress to response maker
     // COMPUTED PROPERTIES    -------------
     
     private def currentDateHeader = Headers().withCurrentDate
@@ -32,10 +33,18 @@ class RequestHandler(val serverAddress: String, val childResources: Traversable[
     
     // OPERATORS    -----------------------
     
-    def apply(request: Request) = 
+    /**
+     * Forms a response for the specified request
+     */
+    def apply(request: Request) = handlePath(request, request.path)
+    
+    
+    // OTHER METHODS    -------------------
+    
+    private def handlePath(request: Request, targetPath: Option[Path]): Response = 
     {
         // Parses the target path (= request path - handler path)
-        var remainingPath = request.path
+        var remainingPath = targetPath
         var error: Option[Error] = None
         var pathToSkip = path
         
@@ -52,23 +61,90 @@ class RequestHandler(val serverAddress: String, val childResources: Traversable[
             }
         }
         
-        // Handles case where the requestHandler is targeted
-        
-        // Finds the initial resource for the path
-        var nextResource = remainingPath.map{ _.head }.flatMap { resourceName => 
-                childResources.find { _.name.equalsIgnoreCase(resourceName) } }
-        var cachedResources = Vector[Resource]()
-        
-        // Searches as long as there is success and more path to discover
-        /*
-        while (nextResource.isDefined && remainingPath.isDefined)
+        val firstResource = remainingPath.map{ _.head }.flatMap { resourceName => 
+                    childResources.find { _.name.equalsIgnoreCase(resourceName) } }
+        if (firstResource.isEmpty)
         {
-            cachedResources :+= nextResource.get
-        }*/
+            error = Some(Error())
+        }
+        
+        // Case: Error
+        if (error.isDefined)
+        {
+            error.get.toResponse()
+        }
+        else if (remainingPath.isEmpty)
+        {
+            // Case: RequestHandler was targeted
+            get
+        }
+        else
+        {
+            // Case: A resource under the handler was targeted
+            // Finds the initial resource for the path
+            var lastResource = remainingPath.map{ _.head }.flatMap { resourceName => 
+                    childResources.find { _.name.equalsIgnoreCase(resourceName) } }
+            // var cachedResources = Vector[Resource]()
+            var foundTarget = false
+            var redirectPath: Option[Path] = None
+            
+            // Searches as long as there is success and more path to discover
+            while (lastResource.isDefined && remainingPath.isDefined && error.isEmpty && 
+                    !foundTarget && redirectPath.isEmpty)
+            {
+                // cachedResources :+= lastResource.get
+                
+                // Sees what's the resources reaction
+                val result = lastResource.get.follow(remainingPath.get, request.headers, 
+                        request.parameters, request.cookies);
+                result match
+                {
+                    case Ready(remaining) => 
+                    {
+                        foundTarget = true
+                        remainingPath = remaining
+                    }
+                    case Follow(next, remaining) => 
+                    {
+                        lastResource = Some(next)
+                        remainingPath = Some(remaining)
+                    }
+                    case Redirected(newPath) => redirectPath = Some(newPath)
+                    case foundError: Error => error = Some(foundError)
+                }
+            }
+            
+            // Handles search results
+            if (error.isDefined)
+            {
+                // TODO: Use correct charset
+                error.get.toResponse()
+            }
+            else if (redirectPath.isDefined)
+            {
+                handlePath(request, redirectPath)
+            }
+            else if (foundTarget)
+            {
+                // Makes sure the method can be used on the targeted resource
+                val allowedMethods = lastResource.get.allowedMethods
+                
+                if (allowedMethods.exists(==))
+                {
+                    lastResource.get.toResponse(request, remainingPath)
+                }
+                else
+                {
+                    val headers = Headers().withCurrentDate.withAllowedMethods(allowedMethods.toVector)
+                    new Response(MethodNotAllowed, headers)
+                }
+            }
+            else
+            {
+                Error().toResponse()
+            }
+        }
     }
-    
-    
-    // OTHER METHODS    -------------------
     
     private def makeNotAllowedResponse(allowedMethods: Seq[Method]) = new Response(
             MethodNotAllowed, currentDateHeader.withAllowedMethods(allowedMethods))

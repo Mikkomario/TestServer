@@ -8,6 +8,7 @@ import http.Headers
 import http.Method
 import http.Path
 import http.Response
+import http.Request
 
 trait Resource
 {
@@ -26,9 +27,11 @@ trait Resource
     /**
      * Performs an operation on this resource and forms a response. The resource may expect that 
      * this method will only be called with methods that are allowed by the resource.
+     * @param request the request targeted to the resource
+     * @param remainingPath if any of the path was left unfollowed by this resource earlier, it 
+     * is provided here
      */
-    def toResponse(method: Method, parameters: Model[Property], headers: Headers, 
-            cookies: Map[String, Cookie], uploads: Map[String, FileUpload]): Response
+    def toResponse(request: Request, remainingPath: Option[Path]): Response
     
     /**
      * Follows the path to a new resource. Returns a result suitable for the situation.
