@@ -3,6 +3,7 @@ package rest
 import collection.JavaConverters._
 import utopia.flow.generic.ValueConversions._
 import utopia.flow.datastructure.immutable
+import java.nio.file
 
 import http.Method.Get
 import http.Path
@@ -15,6 +16,8 @@ import http.Request
 import http.Response
 import java.io.File
 import java.nio.file.Files
+import http.FileUpload
+import scala.util.Try
 
 /**
  * This resource is used for uploading and retrieving file data
@@ -52,12 +55,29 @@ class FilesResource(override val name: String) extends Resource
      * @param directory the directory whose data is returned
      * @param directoryAddress the request url targeting the directory
      */
-    def makeDirectoryModel(directory: File, directoryAddress: String) = 
+    private def makeDirectoryModel(directory: File, directoryAddress: String) = 
     {
         val allFiles = directory.listFiles().toSeq.groupBy { _.isDirectory() }
         val files = allFiles.getOrElse(false, Vector()).map { directoryAddress + "/" + _.getName }
         val directories = allFiles.getOrElse(true, Vector()).map { directoryAddress + "/" + _.getName }
         
         immutable.Model(Vector("files" -> files.toVector, "directories" -> directories.toVector))
+    }
+    
+    private def upload(fileUpload: FileUpload, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
+    {
+        val makeDirectoryResult = remainingPath.map { remaining => 
+                Try(Files.createDirectories(settings.uploadPath.resolve(remaining.toString()))) }
+        
+        if (makeDirectoryResult.isEmpty || makeDirectoryResult.get.isSuccess)
+        {
+            val fileName = remainingPath.map { _ / fileUpload.submittedFileName }.getOrElse(
+                    Path(fileUpload.submittedFileName)).toString();
+            fileUpload.write(fileName)
+        }
+        else
+        {
+            makeDirectoryResult.get
+        }
     }
 }
