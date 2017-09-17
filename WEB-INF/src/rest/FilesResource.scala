@@ -18,6 +18,7 @@ import java.io.File
 import java.nio.file.Files
 import http.FileUpload
 import scala.util.Try
+import scala.util.Failure
 
 /**
  * This resource is used for uploading and retrieving file data
@@ -28,12 +29,13 @@ class FilesResource(override val name: String) extends Resource
 {
     // IMPLEMENTED METHODS & PROPERTIES    ---------------------
     
-    def allowedMethods = Vector(Get)
+    override def allowedMethods = Vector(Get)
     
-    def follow(path: Path, headers: Headers, parameters: Model[Property], 
-            cookies: Map[String, Cookie])(implicit settings: ServerSettings) = Ready(Some(path))
-            
-    def toResponse(request: Request, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
+    override def follow(path: Path, headers: Headers, parameters: Model[Property], 
+            cookies: Map[String, Cookie])(implicit settings: ServerSettings) = Ready(Some(path));
+    
+    // TODO: Add traversed path so that post location can be provided        
+    override def toResponse(request: Request, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
     {
         val targetFilePath = remainingPath.map { remaining => 
                 settings.uploadPath.resolve(remaining.toString) }.getOrElse(settings.uploadPath);
@@ -72,12 +74,12 @@ class FilesResource(override val name: String) extends Resource
         if (makeDirectoryResult.isEmpty || makeDirectoryResult.get.isSuccess)
         {
             val fileName = remainingPath.map { _ / fileUpload.submittedFileName }.getOrElse(
-                    Path(fileUpload.submittedFileName)).toString();
+                    Path(fileUpload.submittedFileName));
             fileUpload.write(fileName)
         }
         else
         {
-            makeDirectoryResult.get
+            Failure(makeDirectoryResult.get.failed.get)
         }
     }
 }

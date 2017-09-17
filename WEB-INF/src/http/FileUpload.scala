@@ -21,22 +21,30 @@ class FileUpload(val name: String, val sizeBytes: Long,
     // ATTRIBUTES    ----------------------------
     
     // The path to where the file has been permanently (?) stored
-    private var fileSavePath: Option[file.Path] = None
+    private var fileSavePath: Option[Path] = None
     
     
     // COMPUTED PROPERTIES    ------------------
     
-    def toInputStream = fileSavePath.map { path => Try(new FileInputStream(path.toFile())).orElse(
+    def toInputStream = filePath.map { path => Try(new FileInputStream(path.toFile())).orElse(
             Try(getInputStream)) }.getOrElse(Try(getInputStream));
+            
+    def filePath = fileSavePath.map { path => settings.uploadPath.resolve(path.toString()) }
     
     
     // OTHER METHODS    -------------------------
     
-    def write(fileName: String = submittedFileName) = Try({
+    /**
+     * Writes the uploaded file into the provided relative path. If the file was already saved, 
+     * just returns the previous destination
+     * @param relativePath the target save path relative to the upload directory
+     * @return the relative path that was used for saving the file. Relative to the upload directory.
+     */
+    def write(relativePath: Path = Path(submittedFileName)) = Try({
         if (fileSavePath.isEmpty) 
         {
-            writeToFile(fileName)
-            fileSavePath = Some(settings.uploadPath.resolve(fileName))
+            writeToFile(relativePath.toString)
+            fileSavePath = Some(relativePath)
         }
         
         fileSavePath.get
