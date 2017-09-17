@@ -8,6 +8,7 @@ import http.MethodNotAllowed
 import http.Headers
 import http.Method
 import utopia.flow.datastructure.immutable.Model
+import http.ServerSettings
 
 /**
  * This class handles a request by searching for the targeted resource and performing the right 
@@ -15,17 +16,15 @@ import utopia.flow.datastructure.immutable.Model
  * @author Mikko Hilpinen
  * @since 9.9.2017
  */
-class RequestHandler(val serverAddress: String, val childResources: Traversable[Resource], 
-        val path: Option[Path] = None)
+class RequestHandler(val childResources: Traversable[Resource], val path: Option[Path] = None)(implicit val settings: ServerSettings)
 {
-    // TODO: Send serverAddress to response maker
     // COMPUTED PROPERTIES    -------------
     
     private def currentDateHeader = Headers().withCurrentDate
     
     private def get = 
     {
-        val childLinks = childResources.map { child => (child.name, (serverAddress + "/" + 
+        val childLinks = childResources.map { child => (child.name, (settings.address + "/" + 
                 path.map { _/(child.name).toString() }.getOrElse(child.name)).toValue) }
         Response.fromModel(Model(childLinks))
     }

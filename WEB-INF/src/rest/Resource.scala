@@ -9,6 +9,7 @@ import http.Method
 import http.Path
 import http.Response
 import http.Request
+import http.ServerSettings
 
 trait Resource
 {
@@ -31,11 +32,11 @@ trait Resource
      * @param remainingPath if any of the path was left unfollowed by this resource earlier, it 
      * is provided here
      */
-    def toResponse(request: Request, remainingPath: Option[Path]): Response
+    def toResponse(request: Request, remainingPath: Option[Path])(implicit settings: ServerSettings): Response
     
     /**
      * Follows the path to a new resource. Returns a result suitable for the situation.
      */
     def follow(path: Path, headers: Headers, parameters: Model[Property], 
-            cookies: Map[String, Cookie]): ResourceSearchResult
+            cookies: Map[String, Cookie])(implicit settings: ServerSettings): ResourceSearchResult
 }

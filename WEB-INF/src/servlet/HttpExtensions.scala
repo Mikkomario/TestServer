@@ -18,6 +18,7 @@ import scala.util.Try
 import http.ContentType
 import http.FileUpload
 import http.Request
+import http.ServerSettings
 
 /**
  * This object contains extensions that can be used with HttpServletRequest and HttpServletResponse 
@@ -65,7 +66,7 @@ object HttpExtensions
     
     implicit class ConvertibleRequest(val r: HttpServletRequest) extends AnyVal
     {
-        def toRequest(fileUploadPath: java.nio.file.Path) = 
+        def toRequest()(implicit settings: ServerSettings) = 
         {
             val method = r.getMethod.toOption.flatMap(Method.parse)
             
@@ -89,8 +90,8 @@ object HttpExtensions
                 
                 val uploads = Try(r.getParts).toOption.map { _.asScala.flatMap {part => 
                         part.getContentType.toOption.flatMap(ContentType.parse).map { 
-                        new FileUpload(fileUploadPath, part.getName, part.getSize, _, 
-                        part.getSubmittedFileName, part.getInputStream, part.write) }}}
+                        new FileUpload(part.getName, part.getSize, _, part.getSubmittedFileName, 
+                        part.getInputStream, part.write) }}}
                 
                 Some(new Request(method.get, path, parameters, headers, cookies, 
                         uploads.getOrElse(Vector())))

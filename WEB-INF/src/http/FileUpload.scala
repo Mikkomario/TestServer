@@ -13,9 +13,10 @@ import scala.util.Try
  * @author Mikko Hilpinen
  * @since 7.9.2017
  */
-class FileUpload(val uploadDirectoryPath: file.Path, val name: String, val sizeBytes: Long, 
+class FileUpload(val name: String, val sizeBytes: Long, 
         val contentType: ContentType, val submittedFileName: String, 
         getInputStream: => InputStream, writeToFile: String => Unit)
+        (private implicit val settings: ServerSettings)
 {
     // ATTRIBUTES    ----------------------------
     
@@ -35,7 +36,7 @@ class FileUpload(val uploadDirectoryPath: file.Path, val name: String, val sizeB
         if (fileSavePath.isEmpty) 
         {
             writeToFile(fileName)
-            fileSavePath = Some(uploadDirectoryPath.resolve(fileName))
+            fileSavePath = Some(settings.uploadPath.resolve(fileName))
         }
         
         fileSavePath.get
