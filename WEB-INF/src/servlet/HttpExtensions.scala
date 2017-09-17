@@ -93,8 +93,8 @@ object HttpExtensions
                         new FileUpload(part.getName, part.getSize, _, part.getSubmittedFileName, 
                         part.getInputStream, part.write) }}}
                 
-                Some(new Request(method.get, path, parameters, headers, cookies, 
-                        uploads.getOrElse(Vector())))
+                Some(new Request(method.get, r.getRequestURL.toString(), path, parameters, headers, 
+                        cookies, uploads.getOrElse(Vector())))
             }
             else
             {

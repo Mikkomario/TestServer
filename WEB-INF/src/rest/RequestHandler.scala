@@ -83,8 +83,14 @@ class RequestHandler(val childResources: Traversable[Resource], val path: Option
             // Finds the initial resource for the path
             var lastResource = remainingPath.map{ _.head }.flatMap { resourceName => 
                     childResources.find { _.name.equalsIgnoreCase(resourceName) } }
+            if (lastResource.isDefined)
+            {
+                // Drops the first resource from the remaining path
+                remainingPath = remainingPath.flatMap { _.tail }
+            }
+            
             // var cachedResources = Vector[Resource]()
-            var foundTarget = false
+            var foundTarget = remainingPath.isEmpty
             var redirectPath: Option[Path] = None
             
             // Searches as long as there is success and more path to discover
