@@ -80,4 +80,48 @@ case class Path(val parts: Seq[String])
      * Drops the first n element from this path and returns the result
      */
     def drop(n: Int) = if (n >= parts.size) None else Some(Path(parts.drop(n)))
+    
+    /**
+     * Finds the path before a specified path portion
+     * @return the path portion before the specified path portion. None if this path doesn't 
+     * contain the specified portion of if this path starts with the specified portion
+     */
+    def before(part: Path) = 
+    {
+        val partIndex = parts.indexOfSlice(part.parts)
+        if (partIndex <= 0)
+        {
+            None
+        }
+        else
+        {
+            Some(Path(parts.take(partIndex)))
+        }
+    }
+    
+    /**
+     * Finds the path after a specified path portion
+     * @return the path portion after the specified path portion. None if this path doesn't 
+     * contain the specified portion of if this path ends with the specified portion
+     */
+    def after(part: Path) = 
+    {
+        val partIndex = parts.indexOfSlice(part.parts)
+        if (partIndex < 0)
+        {
+            None
+        }
+        else
+        {
+            val partEndIndex = partIndex + part.parts.size
+            if (partEndIndex >= parts.size)
+            {
+                None
+            }
+            else
+            {
+                Some(Path(parts.drop(partEndIndex)))
+            }
+        }
+    }
 }

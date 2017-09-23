@@ -17,7 +17,14 @@ object PathTest extends App
     assert(path.tail.get.tail.get.tail.isEmpty)
     assert(path/"d" == Path("a", "b", "c", "d"))
     assert(path.prepend("x") == Path("x", "a", "b", "c"))
-    assert(Path.parse(path.toString) == path)
+    assert(Path.parse(path.toString).get == path)
+    
+    assert(path.before(Path("b", "c")).get == Path("a"))
+    assert(path.after(Path("a", "b")).get == Path("c"))
+    assert(path.before(Path("a", "b")).isEmpty)
+    assert(path.after(Path("b", "c")).isEmpty)
+    assert(path.before(Path("x", "y")).isEmpty)
+    assert(path.before(Path("x", "y")).isEmpty)
     
     println("Success!")
 }
