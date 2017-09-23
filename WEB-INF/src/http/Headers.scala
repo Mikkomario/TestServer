@@ -236,6 +236,11 @@ class Headers(rawFields: Map[String, String] = HashMap()) extends ModelConvertib
      */
     def withLastModified(time: Instant) = withTimeHeader("Last-Modified", time)
     
+    /**
+     * Creates a new header with a specified location information
+     */
+    def withLocation(location: String) = withHeader("Location", location)
+    
     // TODO: Implement support for following predefined headers:
     /*
      * - Accept-Charset

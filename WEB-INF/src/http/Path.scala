@@ -45,6 +45,11 @@ case class Path(val parts: Seq[String])
      */
     def tail = drop(1)
     
+    /**
+     * This path as a complete url
+     */
+    def toServerUrl(implicit settings: ServerSettings) = settings.address + "/" + this
+    
     
     // IMPLEMENTED METHODS    -----------------
     

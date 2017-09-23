@@ -40,12 +40,8 @@ final case class Redirected(val newPath: Path) extends ResourceSearchResult
  */
 final case class Error(val status: Status = NotFound, val message: Option[String] = None) extends ResourceSearchResult
 {
-    def toResponse(charset: Charset = StandardCharsets.UTF_8) = 
-    {
-        val headers = (if (message.isDefined) Headers().withContentType(Text/"plain", 
-                Some(charset)) else Headers()).withCurrentDate
-        new Response(status, headers, Vector(), message.map { message => _.write(message.getBytes(charset)) })
-    }
+    def toResponse(charset: Charset = StandardCharsets.UTF_8) = message.map { 
+            Response.plainText(_, status, charset) }.getOrElse(Response.empty(status))
 }
 
 // TODO: Add contextRequest

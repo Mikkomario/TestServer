@@ -9,6 +9,8 @@ import java.nio.file.Files
 import utopia.flow.datastructure.immutable
 import http.ContentCategory.Application
 import java.nio.charset.StandardCharsets
+import java.nio.charset.Charset
+import http.ContentCategory.Text
 
 object Response
 {
@@ -44,6 +46,24 @@ object Response
             new Response(NotFound)
         }
     }
+    
+    /**
+     * Creates an error response
+     * @param status the status for the response
+     * @param message the optional message sent along with the response
+     * @param charset the character set used for encoding the message content. Default = UTF-8
+     */
+    def plainText(message: String, status: Status = OK, charset: Charset = StandardCharsets.UTF_8) = 
+    {
+        val headers = Headers().withContentType(Text/"plain", Some(charset)).withCurrentDate
+        new Response(status, headers, Vector(), Some({ _.write(message.getBytes(charset)) }))
+    }
+    
+    /**
+     * Creates an empty response with current date header
+     * @param status the status for the response
+     */
+    def empty(status: Status = OK) = new Response(status, Headers().withCurrentDate)
 }
 
 /**
