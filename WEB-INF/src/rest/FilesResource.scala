@@ -8,7 +8,7 @@ import java.nio.file
 import http.Method.Get
 import http.Path
 import http.Headers
-import utopia.flow.datastructure.template.Model
+import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
 import http.Cookie
 import http.ServerSettings
@@ -21,6 +21,9 @@ import scala.util.Try
 import scala.util.Failure
 import http.BadRequest
 import http.InternalServerError
+import utopia.flow.datastructure.immutable.Model
+import http.Method.Post
+import http.MethodNotAllowed
 
 /**
  * This resource is used for uploading and retrieving file data
@@ -33,22 +36,17 @@ class FilesResource(override val name: String) extends Resource
     
     override def allowedMethods = Vector(Get)
     
-    override def follow(path: Path, headers: Headers, parameters: Model[Property], 
+    override def follow(path: Path, headers: Headers, parameters: template.Model[Property], 
             cookies: Map[String, Cookie])(implicit settings: ServerSettings) = Ready(Some(path));
     
     // TODO: Add traversed path so that post location can be provided        
     override def toResponse(request: Request, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
     {
-        val targetFilePath = remainingPath.map { remaining => 
-                settings.uploadPath.resolve(remaining.toString) }.getOrElse(settings.uploadPath);
-        
-        if (Files.isDirectory(targetFilePath))
+        request.method match 
         {
-            Response.fromModel(makeDirectoryModel(targetFilePath.toFile(), request.targetUrl))
-        }
-        else
-        {
-            Response.fromFile(targetFilePath)
+            case Get => handleGet(request, remainingPath)
+            case Post => handlePost(request, remainingPath)
+            case _ => Response.empty(MethodNotAllowed)
         }
     }
     
@@ -94,8 +92,10 @@ class FilesResource(override val name: String) extends Resource
                 val myPath = myLocationFrom(request.path.getOrElse(Path(name)), remainingPath)
                 val resultUrls = successes.mapValues { result => (myPath/result.get).toServerUrl }
                 
-                // TODO: Continue from here
-                // val location
+                val location = if (resultUrls.size == 1) resultUrls.head._2 else myPath.toServerUrl
+                val body = Model.fromMap(resultUrls)
+                
+                Response.fromModel(body).withModifiedHeaders { _.withLocation(location) }
             }
         }
     }
