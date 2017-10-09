@@ -2,13 +2,13 @@ package rest
 
 import collection.JavaConverters._
 import utopia.flow.generic.ValueConversions._
+import utopia.flow.datastructure.template
 import utopia.flow.datastructure.immutable
 import java.nio.file
 
 import http.Method.Get
 import http.Path
 import http.Headers
-import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
 import http.Cookie
 import http.ServerSettings

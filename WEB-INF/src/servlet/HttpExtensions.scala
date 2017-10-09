@@ -66,7 +66,10 @@ object HttpExtensions
     
     implicit class ConvertibleRequest(val r: HttpServletRequest) extends AnyVal
     {
-        def toRequest()(implicit settings: ServerSettings) = 
+        /**
+         * Converts a httpServletRequest into a http Request
+         */
+        def toRequest(implicit settings: ServerSettings) = 
         {
             val method = r.getMethod.toOption.flatMap(Method.parse)
             
@@ -82,7 +85,8 @@ object HttpExtensions
                 
                 val headers = Headers(r.getHeaderNames.asScala.map { hName => (hName, r.getHeader(hName)) }.toMap)
                 
-                val cookies = r.getCookies.map { javaCookie => Cookie(javaCookie.getName, 
+                val javaCookies = r.getCookies.toOption.map(_.toVector).getOrElse(Vector())
+                val cookies = javaCookies.map { javaCookie => Cookie(javaCookie.getName, 
                         javaCookie.getValue.toOption.flatMap { 
                         JSONReader.parseValue(_).toOption }.getOrElse(Value.empty(StringType)), 
                         if (javaCookie.getMaxAge < 0) None else Some(javaCookie.getMaxAge), 

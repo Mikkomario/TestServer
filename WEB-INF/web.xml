@@ -65,6 +65,10 @@
       <servlet-name>Ankka</servlet-name>
       <servlet-class>servlet.AnkkaServlet</servlet-class>
    </servlet>
+   <servlet>
+      <servlet-name>RestServlet</servlet-name>
+      <servlet-class>servlet.RestServlet</servlet-class>
+   </servlet>
  
    <!-- Note: All <servlet> elements MUST be grouped together and
          placed IN FRONT of the <servlet-mapping> elements -->
@@ -80,5 +84,9 @@
    <servlet-mapping>
       <servlet-name>Ankka</servlet-name>
       <url-pattern>/ankka</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>RestServlet</servlet-name>
+      <url-pattern>/rest</url-pattern>
    </servlet-mapping>
 </web-app>
