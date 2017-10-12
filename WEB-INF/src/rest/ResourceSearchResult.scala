@@ -25,9 +25,9 @@ final case class Ready(val remainingPath: Option[Path] = None) extends ResourceS
  * Follow means that the next resource was found but there is still some path to cover. A follow 
  * response should be followed by another search.
  * @param resource The next resource on the path
- * @param remainingPath The path remaining after the provided resource
+ * @param remainingPath The path remaining after the provided resource, if one exists
  */
-final case class Follow(val resource: Resource, val remainingPath: Path) extends ResourceSearchResult
+final case class Follow(val resource: Resource, val remainingPath: Option[Path]) extends ResourceSearchResult
 
 /**
  * A redirect is returned when a link is found and must be followed using a separate path

@@ -112,7 +112,7 @@ class RequestHandler(val childResources: Traversable[Resource], val path: Option
                     case Follow(next, remaining) => 
                     {
                         lastResource = Some(next)
-                        remainingPath = Some(remaining)
+                        remainingPath = remaining
                     }
                     case Redirected(newPath) => redirectPath = Some(newPath)
                     case foundError: Error => error = Some(foundError)

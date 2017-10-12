@@ -12,6 +12,24 @@ object Path
     def apply(first: String, more: String*) = new Path(first +: more)
     
     
+    // EXTENSIONS    ---------------------
+    
+    implicit class PathOption(val p: Option[Path])
+    {
+        /**
+         * Appends this path with another path if this path is present. Otherwise simply returns 
+         * the provided path
+         */
+        def /(path: Path) = p.map(_/path).getOrElse(path)
+        
+        /**
+         * Appends this path with another element if this path is present. Otherwise creates 
+         * a new path out of the element
+         */
+        def /(element: String) = p.map(_/element).getOrElse(Path(element))
+    }
+    
+    
     // OTHER METHODS    ------------------
     
     /**

@@ -26,5 +26,8 @@ object PathTest extends App
     assert(path.before(Path("x", "y")).isEmpty)
     assert(path.before(Path("x", "y")).isEmpty)
     
+    assert(Some(path)/"d" == Path("a", "b", "c", "d"))
+    assert(Path("a").tail/"d" == Path("d"))
+    
     println("Success!")
 }
