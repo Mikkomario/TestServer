@@ -54,30 +54,42 @@ class TestRestResource(val name: String, initialValues: template.Model[Constant]
         {
             case Get => handleGet(request.path)
             case Post => 
+            {
                 if (request.path.isEmpty) 
                     Response.plainText("Path required", BadRequest) 
                 else 
                     handlePost(request.path.get, request.parameters)
+            }
+            case Delete => 
+            {
+                if (request.path.isEmpty)
+                    Response.plainText("Path required", BadRequest)
+                else
+                    handleDelete(request.path.get.lastElement)
+            }
             case _ => Response.empty(NotImplemented)
         }
     }
     
     override def follow(path: Path, request: Request)(implicit settings: ServerSettings) = 
     {
-        // If the path leads to a child, forwards the request to that resource
-        val targetName = path.head.toLowerCase()
-        val nextResource = children.find(_.name.toLowerCase() == targetName)
+        // Post & Delete can be targeted on non-existing items at the end of the paths
         val remainingPath = path.tail
-        
-        nextResource match 
+        if ((request.method == Delete || request.method == Post) && remainingPath.isEmpty) 
         {
-            // For some methods, stops if the next element would be at the end of the path
-            case Some(next) => 
-                if ((request.method == Delete || request.method == Post) && remainingPath.isEmpty) 
-                    Ready(Some(path)) 
-                else 
-                    Follow(next, remainingPath)
-            case None => Error()
+            Ready(Some(path))
+        }
+        else
+        {
+            // If the path leads to a child, forwards the request to that resource
+            val targetName = path.head.toLowerCase()
+            children.find(_.name.toLowerCase() == targetName) match 
+            {
+                // For some methods, stops if the next element would be at the end of the path
+                case Some(next) => 
+                        Follow(next, remainingPath)
+                case None => Error()
+            }
         }
     }
     
@@ -94,5 +106,13 @@ class TestRestResource(val name: String, initialValues: template.Model[Constant]
     {
         children :+= new TestRestResource(path.lastElement, parameters)
         Response.empty(Created).withModifiedHeaders(_.withLocation(path.toServerUrl))
+    }
+    
+    private def handleDelete(targetName: String) = 
+    {
+        children = children.filterNot(_.name.toLowerCase() == targetName.toLowerCase())
+        values = values.filterNot(_.name.toLowerCase() == targetName.toLowerCase())
+        
+        Response.empty()
     }
 }
