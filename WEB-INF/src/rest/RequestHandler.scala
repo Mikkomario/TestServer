@@ -100,8 +100,7 @@ class RequestHandler(val childResources: Traversable[Resource], val path: Option
                 // cachedResources :+= lastResource.get
                 
                 // Sees what's the resources reaction
-                val result = lastResource.get.follow(remainingPath.get, request.headers, 
-                        request.parameters, request.cookies);
+                val result = lastResource.get.follow(remainingPath.get, request);
                 result match
                 {
                     case Ready(remaining) => 

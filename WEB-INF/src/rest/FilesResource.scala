@@ -36,8 +36,7 @@ class FilesResource(override val name: String) extends Resource
     
     override def allowedMethods = Vector(Get)
     
-    override def follow(path: Path, headers: Headers, parameters: template.Model[Property], 
-            cookies: Map[String, Cookie])(implicit settings: ServerSettings) = Ready(Some(path));
+    override def follow(path: Path, request: Request)(implicit settings: ServerSettings) = Ready(Some(path));
     
     // TODO: Add traversed path so that post location can be provided        
     override def toResponse(request: Request, remainingPath: Option[Path])(implicit settings: ServerSettings) = 

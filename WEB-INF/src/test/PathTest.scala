@@ -18,6 +18,7 @@ object PathTest extends App
     assert(path/"d" == Path("a", "b", "c", "d"))
     assert(path.prepend("x") == Path("x", "a", "b", "c"))
     assert(Path.parse(path.toString).get == path)
+    assert(path.lastElement == "c")
     
     assert(path.before(Path("b", "c")).get == Path("a"))
     assert(path.after(Path("a", "b")).get == Path("c"))

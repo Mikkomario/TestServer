@@ -64,6 +64,11 @@ case class Path(val parts: Seq[String])
     def tail = drop(1)
     
     /**
+     * The last element on the path
+     */
+    def lastElement = parts.last
+    
+    /**
      * This path as a complete url
      */
     def toServerUrl(implicit settings: ServerSettings) = settings.address + "/" + this

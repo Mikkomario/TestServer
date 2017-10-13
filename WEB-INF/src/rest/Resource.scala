@@ -38,6 +38,5 @@ trait Resource
      * Follows the path to a new resource. Returns a result suitable for the situation.
      * @param path the path remaining <b>after</b> this resource
      */
-    def follow(path: Path, headers: Headers, parameters: Model[Property], 
-            cookies: Map[String, Cookie])(implicit settings: ServerSettings): ResourceSearchResult
+    def follow(path: Path, request: Request)(implicit settings: ServerSettings): ResourceSearchResult
 }
