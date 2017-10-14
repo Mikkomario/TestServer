@@ -26,6 +26,18 @@ import rest.Ready
 import utopia.flow.generic.ModelType
 import http.Created
 import http.BadRequest
+import http.Forbidden
+
+private object TestRestResource
+{
+    // Parses all model type children from a model
+    private def childrenFromModel(model: template.Model[Property]) = model.attributes.flatMap(attribute => 
+            attribute.value.model.map(attribute.name -> _)).map { case (name, model) => 
+            new TestRestResource(name, model) }
+    
+    // Separates "normal" values from model type values
+    private def nonChildValuesFromModel(model: template.Model[Constant]) = model.attributes.filter(_.value.model.isEmpty)
+}
 
 /**
  * This resource works as a mutable model that accepts rest commands
@@ -36,14 +48,12 @@ class TestRestResource(val name: String, initialValues: template.Model[Constant]
 {
     // ATTRIBUTES    -----------------
     
-    override val allowedMethods = Vector(Get)
+    override val allowedMethods = Vector(Get, Post, Delete, Put)
     
     // All initial values with model type are transformed into children
-    private var children = initialValues.attributes.flatMap(attribute => 
-            attribute.value.model.map(attribute.name -> _)).map { case (name, model) => 
-            new TestRestResource(name, model) }
+    private var children = TestRestResource.childrenFromModel(initialValues)
     // The other values are stored as local values
-    private var values = initialValues.attributes.filter(_.value.model.isEmpty)
+    private var values = TestRestResource.nonChildValuesFromModel(initialValues)
     
     
     // IMPLEMENTED METHODS    --------
@@ -67,6 +77,7 @@ class TestRestResource(val name: String, initialValues: template.Model[Constant]
                 else
                     handleDelete(request.path.get.lastElement)
             }
+            case Put => handlePut(request.parameters)
             case _ => Response.empty(NotImplemented)
         }
     }
@@ -75,7 +86,7 @@ class TestRestResource(val name: String, initialValues: template.Model[Constant]
     {
         // Post & Delete can be targeted on non-existing items at the end of the paths
         val remainingPath = path.tail
-        if ((request.method == Delete || request.method == Post) && remainingPath.isEmpty) 
+        if ((request.method == Delete || request.method == Post || request.method == Put) && remainingPath.isEmpty) 
         {
             Ready(Some(path))
         }
@@ -86,8 +97,7 @@ class TestRestResource(val name: String, initialValues: template.Model[Constant]
             children.find(_.name.toLowerCase() == targetName) match 
             {
                 // For some methods, stops if the next element would be at the end of the path
-                case Some(next) => 
-                        Follow(next, remainingPath)
+                case Some(next) => Follow(next, remainingPath)
                 case None => Error()
             }
         }
@@ -114,5 +124,21 @@ class TestRestResource(val name: String, initialValues: template.Model[Constant]
         values = values.filterNot(_.name.toLowerCase() == targetName.toLowerCase())
         
         Response.empty()
+    }
+    
+    private def handlePut(parameters: template.Model[Constant]) = 
+    {
+        // Cannot delete any existing children with PUT
+        if (children.exists(child => parameters.findExisting(child.name).isDefined))
+        {
+            Response.plainText("Modification of children is not allowed in PUT", Forbidden)
+        }
+        else
+        {
+            children ++= TestRestResource.childrenFromModel(parameters)
+            values ++= TestRestResource.nonChildValuesFromModel(parameters)
+            
+            Response.empty()
+        }
     }
 }
