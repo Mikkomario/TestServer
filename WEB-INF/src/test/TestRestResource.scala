@@ -1,32 +1,26 @@
 package test
 
-import utopia.flow.generic.ValueConversions._
-
-import utopia.flow.datastructure.template
-
-import utopia.flow.datastructure.immutable.Model
-import utopia.flow.datastructure.immutable.Constant
+import http.BadRequest
+import http.Created
+import http.Forbidden
+import http.Method.Delete
 import http.Method.Get
 import http.Method.Post
 import http.Method.Put
-import http.Method.Delete
-import rest.Resource
-import http.Request
-import http.Path
-import http.ServerSettings
-import http.Headers
-import utopia.flow.datastructure.template.Property
-import http.Cookie
-import utopia.flow.datastructure.immutable.Value
-import rest.Follow
-import rest.Error
-import http.Response
 import http.NotImplemented
+import http.Path
+import http.Request
+import http.Response
+import http.ServerSettings
+import rest.Error
+import rest.Follow
 import rest.Ready
-import utopia.flow.generic.ModelType
-import http.Created
-import http.BadRequest
-import http.Forbidden
+import rest.Resource
+import utopia.flow.datastructure.immutable.Constant
+import utopia.flow.datastructure.immutable.Model
+import utopia.flow.datastructure.template
+import utopia.flow.datastructure.template.Property
+import utopia.flow.generic.ValueConversions.ValueOfString
 
 private object TestRestResource
 {
