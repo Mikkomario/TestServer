@@ -62,7 +62,7 @@ class RequestHandler(val childResources: Traversable[Resource], val path: Option
         
         val firstResource = remainingPath.map{ _.head }.flatMap { resourceName => 
                     childResources.find { _.name.equalsIgnoreCase(resourceName) } }
-        if (firstResource.isEmpty)
+        if (remainingPath.isDefined && firstResource.isEmpty)
         {
             error = Some(Error())
         }
@@ -81,8 +81,7 @@ class RequestHandler(val childResources: Traversable[Resource], val path: Option
         {
             // Case: A resource under the handler was targeted
             // Finds the initial resource for the path
-            var lastResource = remainingPath.map{ _.head }.flatMap { resourceName => 
-                    childResources.find { _.name.equalsIgnoreCase(resourceName) } }
+            var lastResource = firstResource
             if (lastResource.isDefined)
             {
                 // Drops the first resource from the remaining path
@@ -133,7 +132,7 @@ class RequestHandler(val childResources: Traversable[Resource], val path: Option
                 // Makes sure the method can be used on the targeted resource
                 val allowedMethods = lastResource.get.allowedMethods
                 
-                if (allowedMethods.exists(==))
+                if (allowedMethods.exists(_ == request.method))
                 {
                     lastResource.get.toResponse(request, remainingPath)
                 }
