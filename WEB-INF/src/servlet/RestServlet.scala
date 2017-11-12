@@ -14,6 +14,7 @@ import http.Path
 import rest.FilesResource
 import http.Response
 import http.BadRequest
+import test.TestRestResource
 
 /**
  * This servlet offers a test implementation of a restful interface using the classes in the project
@@ -32,14 +33,19 @@ class RestServlet extends HttpServlet
     
     DataType.setup()
     private implicit val settings = ServerSettings("http://localhost:9999", Paths.get("D:/Uploads"))
-    private val handler = new RequestHandler(Vector(new FilesResource("files")), Some(Path("rest")))
+    private val handler = new RequestHandler(Vector(new FilesResource("files"), 
+            new TestRestResource("test")), Some(Path("TestServer", "rest")))
     
     
     // IMPLEMENTED METHODS    ------------------
     
     override def doGet(request: HttpServletRequest, response: HttpServletResponse) = 
-            request.toRequest.map(handler.apply).getOrElse(
+    {
+        val parsedResponse = request.toRequest.map(handler.apply).getOrElse(
             Response.plainText("Couldn't parse the request", BadRequest));
+        
+        parsedResponse.update(response)
+    }
     
     override def doPost(request: HttpServletRequest, response: HttpServletResponse) = doGet(request, response)
     override def doPut(request: HttpServletRequest, response: HttpServletResponse) = doGet(request, response)

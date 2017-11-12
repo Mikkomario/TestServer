@@ -34,7 +34,7 @@ class FilesResource(override val name: String) extends Resource
 {
     // IMPLEMENTED METHODS & PROPERTIES    ---------------------
     
-    override def allowedMethods = Vector(Get)
+    override def allowedMethods = Vector(Get, Post)
     
     override def follow(path: Path, request: Request)(implicit settings: ServerSettings) = Ready(Some(path));
     
