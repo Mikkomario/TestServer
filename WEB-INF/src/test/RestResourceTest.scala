@@ -23,6 +23,7 @@ import utopia.flow.datastructure.immutable.Value
 import http.Method.Post
 import http.Method.Put
 import http.Created
+import http.Method.Delete
 
 /**
  * This test makes sure the rest test resource and the request handler are working
@@ -78,6 +79,8 @@ object RestResourceTest extends App
         assert(responseToModel(response).isDefined)
     }
     
+    def testNotFound(path: Path) = assert(handler(makeRequest(Get, path)).status == NotFound)
+    
     def testAttributeExists(path: Path, attName: String) = 
     {
         val response = handler(makeRequest(Get, path))
@@ -110,11 +113,17 @@ object RestResourceTest extends App
         response.headers.location.foreach(println)
     }
     
+    def testDelete(path: Path) = 
+    {
+        val response = handler(makeRequest(Delete, path))
+        assert(response.status == OK)
+    }
+    
     testAttributeExists(Path("rest"), "root")
     
     val rootPath = Path("rest", "root")
     testModelExists(rootPath)
-    assert(handler(makeRequest(Get, Path("rest", "not_here"))).status == NotFound)
+    testNotFound(Path("rest", "not_here"))
     
     testPutAttribute(rootPath, "att1", 1)
     testPutAttribute(rootPath, "att2", "test2")
@@ -125,6 +134,9 @@ object RestResourceTest extends App
     
     testPostModel(rootPath/"model2", Model(Vector("test1" -> "test", "test2" -> 2)))
     testModelExists(rootPath/"model2")
+    
+    testDelete(rootPath/"model2")
+    testNotFound(rootPath/"model2")
     
     println("Success!")
 }
