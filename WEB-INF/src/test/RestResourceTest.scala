@@ -1,5 +1,7 @@
 package test
 
+import utopia.flow.generic.ValueConversions._
+
 import utopia.flow.generic.DataType
 import rest.RequestHandler
 import http.Path
@@ -15,6 +17,12 @@ import java.io.OutputStream
 import java.io.ByteArrayOutputStream
 import http.Method.Get
 import utopia.flow.parse.JSONReader
+import http.OK
+import http.NotFound
+import utopia.flow.datastructure.immutable.Value
+import http.Method.Post
+import http.Method.Put
+import http.Created
 
 /**
  * This test makes sure the rest test resource and the request handler are working
@@ -50,7 +58,9 @@ object RestResourceTest extends App
         }
     }
     
-    def responseToModel(response: Response) = responseToString(response).flatMap(JSONReader.parseSingle)
+    def stringToModel(s: String) = JSONReader.parseSingle(s)
+    
+    def responseToModel(response: Response) = responseToString(response).flatMap(stringToModel)
     
     def makeRequest(method: Method, path: Path, parameters: Model[Constant] = Model(Vector())) = 
     {
@@ -61,9 +71,60 @@ object RestResourceTest extends App
     
     def getModel(path: Path) =  responseToModel(handler(makeRequest(Get, path)))
     
-    println(getString(Path("rest")))
-    println(getString(Path("rest", "root")))
-    println(getString(Path("rest", "not_here")))
+    def testModelExists(path: Path) = 
+    {
+        val response = handler(makeRequest(Get, path))
+        assert(response.status == OK)
+        assert(responseToModel(response).isDefined)
+    }
+    
+    def testAttributeExists(path: Path, attName: String) = 
+    {
+        val response = handler(makeRequest(Get, path))
+        val responseString = responseToString(response)
+        
+        if (response.status == OK)
+        {
+            assert(responseString.isDefined)
+            
+            println(responseString.get)
+            assert(stringToModel(responseString.get).exists(_(attName).isDefined))
+        }
+        else 
+        {
+            println(s"Status: ${ response.status }")
+            assert(false)
+        }
+    }
+    
+    def testPutAttribute(path: Path, attName: String, value: Value) = 
+    {
+        val response = handler(makeRequest(Put, path, Model(Vector(attName -> value))))
+        assert(response.status == OK)
+    }
+    
+    def testPostModel(path: Path, model: Model[Constant]) = 
+    {
+        val response = handler(makeRequest(Post, path, model))
+        assert(response.status == Created)
+        response.headers.location.foreach(println)
+    }
+    
+    testAttributeExists(Path("rest"), "root")
+    
+    val rootPath = Path("rest", "root")
+    testModelExists(rootPath)
+    assert(handler(makeRequest(Get, Path("rest", "not_here"))).status == NotFound)
+    
+    testPutAttribute(rootPath, "att1", 1)
+    testPutAttribute(rootPath, "att2", "test2")
+    testPutAttribute(rootPath, "model", Model(Vector("a" -> 1, "b" -> 2)))
+    
+    testAttributeExists(rootPath, "att1")
+    testAttributeExists(rootPath, "model")
+    
+    testPostModel(rootPath/"model2", Model(Vector("test1" -> "test", "test2" -> 2)))
+    testModelExists(rootPath/"model2")
     
     println("Success!")
 }

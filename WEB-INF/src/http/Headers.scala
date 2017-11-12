@@ -89,14 +89,19 @@ class Headers(rawFields: Map[String, String] = HashMap()) extends ModelConvertib
     def date = timeHeader("Date")
     
     /**
-     * Creates a new set of headers with the updated message date / time
+     * The location of the generated or searched resource. (Usually) contains the whole url.
      */
-    def withCurrentDate = withDate(Instant.now())
+    def location = apply("Location")
     
     /**
      * The time when the resource was last modified
      */
     def lastModified = timeHeader("Last-Modified")
+    
+    /**
+     * Creates a new set of headers with the updated message date / time
+     */
+    def withCurrentDate = withDate(Instant.now())
     
     
     // OPERATORS    ---------------

@@ -47,6 +47,7 @@ class RequestHandler(val childResources: Traversable[Resource], val path: Option
         var error: Option[Error] = None
         var pathToSkip = path
         
+        // Skips the path that leads to this handler resource
         while (pathToSkip.isDefined && error.isEmpty)
         {
             if (remainingPath.isEmpty || !remainingPath.get.head.equalsIgnoreCase(pathToSkip.get.head))
@@ -88,7 +89,6 @@ class RequestHandler(val childResources: Traversable[Resource], val path: Option
                 remainingPath = remainingPath.flatMap { _.tail }
             }
             
-            // var cachedResources = Vector[Resource]()
             var foundTarget = remainingPath.isEmpty
             var redirectPath: Option[Path] = None
             
@@ -96,8 +96,6 @@ class RequestHandler(val childResources: Traversable[Resource], val path: Option
             while (lastResource.isDefined && remainingPath.isDefined && error.isEmpty && 
                     !foundTarget && redirectPath.isEmpty)
             {
-                // cachedResources :+= lastResource.get
-                
                 // Sees what's the resources reaction
                 val result = lastResource.get.follow(remainingPath.get, request);
                 result match
@@ -111,6 +109,13 @@ class RequestHandler(val childResources: Traversable[Resource], val path: Option
                     {
                         lastResource = Some(next)
                         remainingPath = remaining
+                        
+                        // If there is no path left, assumes that the final resource is ready to 
+                        // receive the request
+                        if (remainingPath.isEmpty)
+                        {
+                            foundTarget = true
+                        }
                     }
                     case Redirected(newPath) => redirectPath = Some(newPath)
                     case foundError: Error => error = Some(foundError)
