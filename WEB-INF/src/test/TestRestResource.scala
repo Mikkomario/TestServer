@@ -80,7 +80,7 @@ class TestRestResource(val name: String, initialValues: template.Model[Constant]
     {
         // Post & Delete can be targeted on non-existing items at the end of the paths
         val remainingPath = path.tail
-        if ((request.method == Delete || request.method == Post || request.method == Put) && remainingPath.isEmpty) 
+        if ((request.method == Delete || request.method == Post) && remainingPath.isEmpty) 
         {
             Ready(Some(path))
         }

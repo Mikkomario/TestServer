@@ -119,6 +119,11 @@ object RestResourceTest extends App
         assert(response.status == OK)
     }
     
+    def testAttValue(path: Path, attName: String, expectedValue: Value) = 
+    {
+        assert(getModel(path).exists(_(attName) == expectedValue))
+    }
+    
     testAttributeExists(Path("rest"), "root")
     
     val rootPath = Path("rest", "root")
@@ -132,11 +137,17 @@ object RestResourceTest extends App
     testAttributeExists(rootPath, "att1")
     testAttributeExists(rootPath, "model")
     
-    testPostModel(rootPath/"model2", Model(Vector("test1" -> "test", "test2" -> 2)))
-    testModelExists(rootPath/"model2")
+    val model2Path = rootPath/"model2"
     
-    testDelete(rootPath/"model2")
-    testNotFound(rootPath/"model2")
+    testPostModel(model2Path, Model(Vector("test1" -> "test", "test2" -> 2)))
+    testModelExists(model2Path)
+    
+    testAttValue(model2Path, "test1", "test")
+    testPutAttribute(model2Path, "test1", 1)
+    testAttValue(model2Path, "test1", 1)
+    
+    testDelete(model2Path)
+    testNotFound(model2Path)
     
     println("Success!")
 }
