@@ -24,6 +24,7 @@ import http.Method.Post
 import http.Method.Put
 import http.Created
 import http.Method.Delete
+import rest.FilesResource
 
 /**
  * This test makes sure the rest test resource and the request handler are working
@@ -36,7 +37,8 @@ object RestResourceTest extends App
     implicit val settings = ServerSettings("https://localhost:9999", Paths.get("D:/Uploads"))
     
     val rootResource = new TestRestResource("root")
-    val handler = new RequestHandler(Vector(rootResource), Some(Path("rest")))
+    val filesResource = new FilesResource("files")
+    val handler = new RequestHandler(Vector(rootResource, filesResource), Some(Path("rest")))
     
     def responseToString(response: Response) = 
     {
@@ -148,6 +150,9 @@ object RestResourceTest extends App
     
     testDelete(model2Path)
     testNotFound(model2Path)
+    
+    val filesPath = Path("rest", "files")
+    testModelExists(filesPath)
     
     println("Success!")
 }

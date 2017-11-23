@@ -24,9 +24,13 @@ import http.InternalServerError
 import utopia.flow.datastructure.immutable.Model
 import http.Method.Post
 import http.MethodNotAllowed
+import http.Created
 
 /**
- * This resource is used for uploading and retrieving file data
+ * This resource is used for uploading and retrieving file data.<br>
+ * GET retrieves a file / describes a directory (model)<br>
+ * POST targets a directory and uploads the file(s) to that directory. Returns CREATED along with 
+ * a set of links to uploaded files.
  * @author Mikko Hilpinen
  * @since 17.9.2017
  */
@@ -94,7 +98,7 @@ class FilesResource(override val name: String) extends Resource
                 val location = if (resultUrls.size == 1) resultUrls.head._2 else myPath.toServerUrl
                 val body = Model.fromMap(resultUrls)
                 
-                Response.fromModel(body).withModifiedHeaders { _.withLocation(location) }
+                Response.fromModel(body, Created).withModifiedHeaders { _.withLocation(location) }
             }
         }
     }
@@ -109,6 +113,19 @@ class FilesResource(override val name: String) extends Resource
         val files = allFiles.getOrElse(false, Vector()).map { directoryAddress + "/" + _.getName }
         val directories = allFiles.getOrElse(true, Vector()).map { directoryAddress + "/" + _.getName }
         
+        /*
+        println(directories)
+        println(directories.toVector)
+        println(directories.toVector.toValue.vector)
+        
+        val test = Vector("asd")//"https://localhost:9999/rest/files/testikansio")
+        println(test)
+        println(test.toValue)
+        println(test.toValue.string)
+        println()
+        // println(directories.toVector.toValue.string)
+        // println(directories.toVector.toValue.toJSON)
+        */
         immutable.Model(Vector("files" -> files.toVector, "directories" -> directories.toVector))
     }
     
