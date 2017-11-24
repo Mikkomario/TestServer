@@ -78,7 +78,9 @@ object RestResourceTest extends App
     {
         val response = handler(makeRequest(Get, path))
         assert(response.status == OK)
-        assert(responseToModel(response).isDefined)
+        val model = responseToModel(response)
+        assert(model.isDefined)
+        println(model.get)
     }
     
     def testNotFound(path: Path) = assert(handler(makeRequest(Get, path)).status == NotFound)
@@ -153,6 +155,7 @@ object RestResourceTest extends App
     
     val filesPath = Path("rest", "files")
     testModelExists(filesPath)
+    testModelExists(filesPath/"testikansio")
     
     println("Success!")
 }

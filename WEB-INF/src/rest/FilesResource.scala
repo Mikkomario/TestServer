@@ -25,12 +25,19 @@ import utopia.flow.datastructure.immutable.Model
 import http.Method.Post
 import http.MethodNotAllowed
 import http.Created
+import http.OK
+import http.NotFound
+import http.Forbidden
+import http.Method.Delete
 
 /**
  * This resource is used for uploading and retrieving file data.<br>
  * GET retrieves a file / describes a directory (model)<br>
  * POST targets a directory and uploads the file(s) to that directory. Returns CREATED along with 
- * a set of links to uploaded files.
+ * a set of links to uploaded files.<br>
+ * DELETE targets a file or a directory and deletes that file + all files under it. Returns 
+ * OK if deletion was successful and Internal Server Error (500) if it was not. Returns Not Found (404) 
+ * if no valid file or directory was targeted
  * @author Mikko Hilpinen
  * @since 17.9.2017
  */
@@ -38,7 +45,7 @@ class FilesResource(override val name: String) extends Resource
 {
     // IMPLEMENTED METHODS & PROPERTIES    ---------------------
     
-    override def allowedMethods = Vector(Get, Post)
+    override def allowedMethods = Vector(Get, Post, Delete)
     
     override def follow(path: Path, request: Request)(implicit settings: ServerSettings) = Ready(Some(path));
     
@@ -49,6 +56,7 @@ class FilesResource(override val name: String) extends Resource
         {
             case Get => handleGet(request, remainingPath)
             case Post => handlePost(request, remainingPath)
+            case Delete => handleDelete(remainingPath)
             case _ => Response.empty(MethodNotAllowed)
         }
     }
@@ -58,16 +66,19 @@ class FilesResource(override val name: String) extends Resource
     
     private def handleGet(request: Request, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
     {
-        val targetFilePath = remainingPath.map { remaining => 
-                settings.uploadPath.resolve(remaining.toString) }.getOrElse(settings.uploadPath);
+        val targetFilePath = targetFilePathFrom(remainingPath)
         
         if (Files.isDirectory(targetFilePath))
         {
             Response.fromModel(makeDirectoryModel(targetFilePath.toFile(), request.targetUrl))
         }
-        else
+        else if (Files.isRegularFile(targetFilePath))
         {
             Response.fromFile(targetFilePath)
+        }
+        else
+        {
+            Response.empty(NotFound)
         }
     }
     
@@ -87,7 +98,7 @@ class FilesResource(override val name: String) extends Resource
             if (successes.isEmpty)
             {
                 // TODO: Possibly provide an error message
-                Response.empty(InternalServerError)
+                Response.empty(Forbidden)
             }
             else
             {
@@ -103,6 +114,14 @@ class FilesResource(override val name: String) extends Resource
         }
     }
     
+    private def handleDelete(remainingPath: Option[Path])(implicit settings: ServerSettings) = 
+    {
+        if (remainingPath.isEmpty)
+            Response.plainText("May not delete the root upload folder", Forbidden)
+        else
+            Response.empty(delete(remainingPath.get))
+    }
+    
     /**
      * @param directory the directory whose data is returned
      * @param directoryAddress the request url targeting the directory
@@ -113,19 +132,6 @@ class FilesResource(override val name: String) extends Resource
         val files = allFiles.getOrElse(false, Vector()).map { directoryAddress + "/" + _.getName }
         val directories = allFiles.getOrElse(true, Vector()).map { directoryAddress + "/" + _.getName }
         
-        /*
-        println(directories)
-        println(directories.toVector)
-        println(directories.toVector.toValue.vector)
-        
-        val test = Vector("asd")//"https://localhost:9999/rest/files/testikansio")
-        println(test)
-        println(test.toValue)
-        println(test.toValue.string)
-        println()
-        // println(directories.toVector.toValue.string)
-        // println(directories.toVector.toValue.toJSON)
-        */
         immutable.Model(Vector("files" -> files.toVector, "directories" -> directories.toVector))
     }
     
@@ -146,9 +152,37 @@ class FilesResource(override val name: String) extends Resource
         }
     }
     
+    private def delete(remainingPath: Path)(implicit settings: ServerSettings) = 
+    {
+        val targetFilePath = targetFilePathFrom(Some(remainingPath))
+        if (Files.exists(targetFilePath))
+        {
+            if (recursiveDelete(targetFilePath.toFile)) OK else InternalServerError
+        }
+        else
+        {
+            NotFound
+        }
+    }
+    
+    private def targetFilePathFrom(remainingPath: Option[Path])(implicit settings: ServerSettings) = 
+            remainingPath.map { remaining => settings.uploadPath.resolve(
+            remaining.toString) }.getOrElse(settings.uploadPath)
+    
     private def myLocationFrom(targetPath: Path, remainingPath: Option[Path]) = 
             remainingPath.flatMap(targetPath.before).getOrElse(targetPath);
     
     private def parseLocation(targetPath: Path, remainingPath: Option[Path], generatedPath: Path) = 
-            myLocationFrom(targetPath, remainingPath)/generatedPath
+            myLocationFrom(targetPath, remainingPath)/generatedPath;
+    
+    private def recursiveDelete(file: File): Boolean = 
+    {
+        if (file.isDirectory())
+        {
+            // If a directory is targeted, removes all files from the said directory
+            file.listFiles().foreach(recursiveDelete)
+        }
+        // removes the file itself as well
+        file.delete()
+    }
 }
