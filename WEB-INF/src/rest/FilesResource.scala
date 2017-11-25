@@ -2,6 +2,7 @@ package rest
 
 import collection.JavaConverters._
 import utopia.flow.generic.ValueConversions._
+import utopia.flow.util.NullSafe._
 import utopia.flow.datastructure.template
 import utopia.flow.datastructure.immutable
 import java.nio.file
@@ -96,8 +97,10 @@ class FilesResource(override val name: String) extends Resource
                   
             if (successes.isEmpty)
             {
-                // TODO: Possibly provide an error message
-                Response.empty(Forbidden)
+                // TODO: For some reason, the error message only tells the directory which 
+                // couldn't be created
+                val errorMessage = uploadResults.head._2.failed.get.getMessage.toOption
+                errorMessage.map(Response.plainText(_, Forbidden)).getOrElse(Response.empty(Forbidden))
             }
             else
             {

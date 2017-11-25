@@ -1,5 +1,5 @@
 /**
- * This package contains models and tools for transferring data via html
+ * This package contains models and tools for transferring data over http
  */
 /**
  * @author Mikko Hilpinen

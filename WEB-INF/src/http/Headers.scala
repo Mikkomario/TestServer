@@ -247,6 +247,7 @@ class Headers(rawFields: Map[String, String] = HashMap()) extends ModelConvertib
     def withLocation(location: String) = withHeader("Location", location)
     
     // TODO: Implement support for following predefined headers:
+    // https://en.wikipedia.org/wiki/List_of_HTTP_header_fields
     /*
      * - Accept-Charset
      * - Accept-Language (?)

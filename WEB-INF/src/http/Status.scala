@@ -2,7 +2,7 @@ package http
 
 /**
  * Different statuses are used for signaling different response roles<br>
- * See also: https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html [referenced: 20.8.2014]
+ * See also: https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html [referenced: 25.11.2017]
  * @author Mikko Hilpinen
  * @since 20.8.2017
  */
