@@ -48,8 +48,7 @@ class FilesResource(override val name: String) extends Resource
     override def allowedMethods = Vector(Get, Post, Delete)
     
     override def follow(path: Path, request: Request)(implicit settings: ServerSettings) = Ready(Some(path));
-    
-    // TODO: Add traversed path so that post location can be provided        
+         
     override def toResponse(request: Request, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
     {
         request.method match 
