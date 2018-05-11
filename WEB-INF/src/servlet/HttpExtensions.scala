@@ -77,6 +77,8 @@ object HttpExtensions
             {
                 val path = r.getRequestURI.toOption.flatMap(Path.parse)
                 
+                // TODO: Add support for different body types, one of which may be multipart
+                
                 // TODO: Add parameter decoding
                 val paramValues = r.getParameterNames.asScala.map { pName => 
                         (pName, JSONReader.parseValue(r.getParameter(pName))) }.flatMap { case (name, value) => 

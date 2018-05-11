@@ -44,6 +44,9 @@ class Request(val method: Method, val targetUrl: String, val path: Option[Path] 
         rawCookies: Traversable[Cookie] = Vector(), 
         rawFileUploads: Traversable[FileUpload] = Vector())
 {
+    // TODO: Add support for the body data, not just multipart data
+    // https://stackoverflow.com/questions/14525982/getting-request-payload-from-post-request-in-java-servlet
+    
     // ATTRIBUTES    ---------------------------
     
     /**
