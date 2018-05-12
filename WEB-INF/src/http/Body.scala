@@ -10,6 +10,8 @@ import utopia.access.http.ContentType
 **/
 trait Body
 {
+    // ABSTRACT    -------------------
+    
     /**
      * The headers for this body
      */
@@ -22,4 +24,12 @@ trait Body
 	 * The content type for this body
 	 */
 	def contentType: ContentType
+	
+	
+	// COMPUTED PROPERTIES    ---------
+	
+	/**
+	 * Whether this body is empty
+	 */
+	def isEmpty = contentLength.exists(_ == 0) && !headers.isChunked
 }
