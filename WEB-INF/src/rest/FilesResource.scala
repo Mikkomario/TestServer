@@ -30,6 +30,7 @@ import http.Body
 import java.time.LocalDateTime
 import http.StreamedBody
 import scala.util.Success
+import utopia.flow.util.Counter
 
 /**
  * This resource is used for uploading and retrieving file data.<br>
@@ -91,8 +92,14 @@ class FilesResource(override val name: String) extends Resource
         }
         else
         {
-            val uploadResults = request.body.map(upload(_, remainingPath))
-            val successes = uploadResults.flatMap(_.toOption)
+            val counter = new Counter(1)
+            val nameFromParam = request.parameters("filename").string.orElse(request.parameters("name").string)
+            val partNames = request.body.map(p => p.name.getOrElse(nameFromParam.getOrElse(
+                    "upload_" + LocalDateTime.now()) + (if (request.body.size > 1) "_" + counter.next() else "")));
+            
+            val uploadResults = request.body.zip(partNames).map { 
+                    case (b, name) => upload(b, name, remainingPath) }
+            val successes = partNames.zip(uploadResults).filter(_._2.isSuccess).toMap.mapValues(_.get)
             
             if (successes.isEmpty)
             {
@@ -105,42 +112,12 @@ class FilesResource(override val name: String) extends Resource
             {
                 // TODO: Add better handling for cases where request path is empty for some reason
                 val myPath = myLocationFrom(request.path.getOrElse(Path(name)), remainingPath)
-                val resultUrls = successes.map(myPath/_).map(_.toServerUrl)
-                
-                val location = if (resultUrls.size == 1) resultUrls.head else myPath.toServerUrl
-                
-                // TODO: Finish. Also, need better name generation for files
-                // Response.fromModel(body, Created).withModifiedHeaders { _.withLocation(location) }
-                
-                
-                Response.empty()
-            }
-            
-            /*
-            val uploadResults = request.fileUploads.map { case (name, file) => 
-                    (name, upload(file, remainingPath)) }
-            val successes = uploadResults.filter { _._2.isSuccess }
-                  
-            if (successes.isEmpty)
-            {
-                // TODO: For some reason, the error message only tells the directory which 
-                // couldn't be created
-                val errorMessage = uploadResults.head._2.failed.get.getMessage.toOption
-                errorMessage.map(Response.plainText(_, Forbidden)).getOrElse(Response.empty(Forbidden))
-            }
-            else
-            {
-                // TODO: Add better handling for cases where request path is empty for some reason
-                val myPath = myLocationFrom(request.path.getOrElse(Path(name)), remainingPath)
-                val resultUrls = successes.mapValues { result => (myPath/result.get).toServerUrl }
+                val resultUrls = successes.mapValues(p => (myPath/p).toServerUrl)
                 
                 val location = if (resultUrls.size == 1) resultUrls.head._2 else myPath.toServerUrl
-                val body = Model.fromMap(resultUrls)
                 
-                Response.fromModel(body, Created).withModifiedHeaders { _.withLocation(location) }
+                Response.fromModel(Model.fromMap(resultUrls)).withModifiedHeaders(_.withLocation(location))
             }
-            * */
-            
         }
     }
     
@@ -165,28 +142,21 @@ class FilesResource(override val name: String) extends Resource
         immutable.Model(Vector("files" -> files.toVector, "directories" -> directories.toVector))
     }
     
-    private def upload(part: StreamedBody, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
+    private def upload(part: StreamedBody, partName: String, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
     {
-        val directoryPath = remainingPath.flatMap(remaining => if (part.name.isDefined)
-                Some(remaining) else remaining.dropLast())
-        
-        val makeDirectoryResult = directoryPath.map(_.toString()).map(
+        val makeDirectoryResult = remainingPath.map(_.toString()).map(
                 settings.uploadPath.resolve).map(
                 p => Try(Files.createDirectories(p))).getOrElse(Success(settings.uploadPath))
         
         if (makeDirectoryResult.isSuccess)
         {
             // Generates the proper file name
-            val rawFileName = part.name.orElse(remainingPath.map(_.lastElement)).getOrElse(
-                    "upload_" + LocalDateTime.now());
-            val fileName = if (rawFileName.contains(".")) 
-                    rawFileName else rawFileName + "." + part.contentType.subType
-            
+            val fileName = if (partName.contains(".")) partName else partName + "." + part.contentType.subType
             val filePath = makeDirectoryResult.get.resolve(fileName)
             
             // Writes the file, returns the server path for the targeted resource
             part.writeToFile(filePath.toFile).map(
-                    _ => directoryPath.map(_/fileName) getOrElse Path(fileName))
+                    _ => remainingPath.map(_/fileName) getOrElse Path(fileName))
         }
         else
         {
