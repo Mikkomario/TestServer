@@ -24,6 +24,10 @@ trait Body
 	 * The content type for this body
 	 */
 	def contentType: ContentType
+	/**
+	 * The name of this part, if it has one
+	 */
+	def name: Option[String]
 	
 	
 	// COMPUTED PROPERTIES    ---------

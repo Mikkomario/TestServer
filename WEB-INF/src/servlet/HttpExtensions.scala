@@ -2,6 +2,8 @@ package servlet
 
 import utopia.flow.util.NullSafe._
 import collection.JavaConverters._
+import utopia.access.http.ContentCategory._
+
 import javax.servlet.http.HttpServletResponse
 import http.Response
 import javax.servlet.http.HttpServletRequest
@@ -19,6 +21,12 @@ import utopia.access.http.Method
 import utopia.access.http.Headers
 import utopia.access.http.Cookie
 import utopia.access.http.ContentType
+import http.StreamedBody
+import javax.servlet.http.Part
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.nio.charset.Charset
+import java.util.Collection
 
 /**
  * This object contains extensions that can be used with HttpServletRequest and HttpServletResponse 
@@ -94,18 +102,47 @@ object HttpExtensions
                         if (javaCookie.getMaxAge < 0) None else Some(javaCookie.getMaxAge), 
                         javaCookie.getSecure) }
                 
+                val body = bodyFromRequest(r, headers).filter(!_.isEmpty)
+                /*
                 val uploads = Try(r.getParts).toOption.map { _.asScala.flatMap {part => 
                         part.getContentType.toOption.flatMap(ContentType.parse).map { 
                         new FileUpload(part.getName, part.getSize, _, part.getSubmittedFileName, 
-                        part.getInputStream, part.write) }}}
+                        part.getInputStream, part.write) }}}*/
                 
                 Some(new Request(method.get, r.getRequestURL.toString(), path, parameters, headers, 
-                        cookies, uploads.getOrElse(Vector())))
+                        body, cookies))
             }
             else
             {
                 None
             }
         }
+        
+        private def bodyFromRequest(request: HttpServletRequest, headers: Headers) = 
+        {
+            val contentType = headers.contentType
+            
+            if (contentType.isEmpty)
+                Vector();
+            else if (contentType.get.category == MultiPart)
+                Try(request.getParts).toOption.map(_.asScala.map(partToBody)).toVector.flatten;
+            else
+                Vector(new StreamedBody(request.getReader, contentType.get, 
+                        Some(request.getContentLengthLong).filter(_ >= 0), headers))
+        }
+        
+        private def partToBody(part: Part) =
+        {
+            val headers = parseHeaders(part.getHeaderNames, part.getHeader)
+            val contentType = part.getContentType.toOption.flatMap(ContentType.parse).getOrElse(Text.plain)
+            val charset = headers.charset.getOrElse(Charset.defaultCharset())
+            
+            new StreamedBody(new BufferedReader(new InputStreamReader(part.getInputStream, charset)), 
+                    contentType, Some(part.getSize), headers, 
+                    part.getSubmittedFileName.toOption.orElse(part.getName.toOption))
+        }
+        
+        private def parseHeaders(headerNames: Collection[String], getValue: String => String) = 
+                Headers(headerNames.asScala.map(hName => (hName, getValue(hName))).toMap)
     }
 }

@@ -26,6 +26,10 @@ import utopia.access.http.Forbidden
 import utopia.access.http.OK
 import utopia.access.http.InternalServerError
 import utopia.access.http.Created
+import http.Body
+import java.time.LocalDateTime
+import http.StreamedBody
+import scala.util.Success
 
 /**
  * This resource is used for uploading and retrieving file data.<br>
@@ -80,13 +84,39 @@ class FilesResource(override val name: String) extends Resource
     
     private def handlePost(request: Request, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
     {
-        if (request.fileUploads.isEmpty)
+        if (request.body.isEmpty)
         {
             // TODO: Use correct encoding
             Response.plainText("No files were provided", BadRequest)
         }
         else
         {
+            val uploadResults = request.body.map(upload(_, remainingPath))
+            val successes = uploadResults.flatMap(_.toOption)
+            
+            if (successes.isEmpty)
+            {
+                // TODO: For some reason, the error message only tells the directory which 
+                // couldn't be created
+                val errorMessage = uploadResults.head.failed.get.getMessage.toOption
+                errorMessage.map(Response.plainText(_, Forbidden)).getOrElse(Response.empty(Forbidden))
+            }
+            else
+            {
+                // TODO: Add better handling for cases where request path is empty for some reason
+                val myPath = myLocationFrom(request.path.getOrElse(Path(name)), remainingPath)
+                val resultUrls = successes.map(myPath/_).map(_.toServerUrl)
+                
+                val location = if (resultUrls.size == 1) resultUrls.head else myPath.toServerUrl
+                
+                // TODO: Finish. Also, need better name generation for files
+                // Response.fromModel(body, Created).withModifiedHeaders { _.withLocation(location) }
+                
+                
+                Response.empty()
+            }
+            
+            /*
             val uploadResults = request.fileUploads.map { case (name, file) => 
                     (name, upload(file, remainingPath)) }
             val successes = uploadResults.filter { _._2.isSuccess }
@@ -109,6 +139,8 @@ class FilesResource(override val name: String) extends Resource
                 
                 Response.fromModel(body, Created).withModifiedHeaders { _.withLocation(location) }
             }
+            * */
+            
         }
     }
     
@@ -133,6 +165,36 @@ class FilesResource(override val name: String) extends Resource
         immutable.Model(Vector("files" -> files.toVector, "directories" -> directories.toVector))
     }
     
+    private def upload(part: StreamedBody, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
+    {
+        val directoryPath = remainingPath.flatMap(remaining => if (part.name.isDefined)
+                Some(remaining) else remaining.dropLast())
+        
+        val makeDirectoryResult = directoryPath.map(_.toString()).map(
+                settings.uploadPath.resolve).map(
+                p => Try(Files.createDirectories(p))).getOrElse(Success(settings.uploadPath))
+        
+        if (makeDirectoryResult.isSuccess)
+        {
+            // Generates the proper file name
+            val rawFileName = part.name.orElse(remainingPath.map(_.lastElement)).getOrElse(
+                    "upload_" + LocalDateTime.now());
+            val fileName = if (rawFileName.contains(".")) 
+                    rawFileName else rawFileName + "." + part.contentType.subType
+            
+            val filePath = makeDirectoryResult.get.resolve(fileName)
+            
+            // Writes the file, returns the server path for the targeted resource
+            part.writeToFile(filePath.toFile).map(
+                    _ => directoryPath.map(_/fileName) getOrElse Path(fileName))
+        }
+        else
+        {
+            Failure(makeDirectoryResult.failed.get)
+        }
+    }
+    
+    /*
     private def upload(fileUpload: FileUpload, remainingPath: Option[Path])(implicit settings: ServerSettings) = 
     {
         val makeDirectoryResult = remainingPath.map { remaining => 
@@ -148,7 +210,7 @@ class FilesResource(override val name: String) extends Resource
         {
             Failure(makeDirectoryResult.get.failed.get)
         }
-    }
+    }*/
     
     private def delete(remainingPath: Path)(implicit settings: ServerSettings) = 
     {

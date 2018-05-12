@@ -18,12 +18,13 @@ import java.io.FileOutputStream
 * @since 12.5.2018
 **/
 class StreamedBody(val reader: BufferedReader, val contentType: ContentType = Text.plain, 
-        val contentLength: Option[Long] = None, val headers: Headers = Headers()) extends Body
+        val contentLength: Option[Long] = None, val headers: Headers = Headers(), 
+        val name: Option[String] = None) extends Body
 {
     // OTHER METHODS    --------------------
     
     def buffered[T](f: BufferedReader => T) = new BufferedBody(f(reader), contentType, 
-            contentLength, headers)
+            contentLength, headers, name)
     
     /**
 	 * Writes the contents of this body into an output stream. Best performance is 

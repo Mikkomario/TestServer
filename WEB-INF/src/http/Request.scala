@@ -44,8 +44,7 @@ object Request extends FromModelFactory[Request]
  */
 class Request(val method: Method, val targetUrl: String, val path: Option[Path] = None, 
         val parameters: Model[Constant] = Model(Vector()), val headers: Headers = Headers(), 
-        rawCookies: Traversable[Cookie] = Vector(), 
-        rawFileUploads: Traversable[FileUpload] = Vector())
+        val body: Seq[StreamedBody] = Vector(), rawCookies: Traversable[Cookie] = Vector())
 {
     // TODO: Add support for the body data, not just multipart data
     // https://stackoverflow.com/questions/14525982/getting-request-payload-from-post-request-in-java-servlet
@@ -56,11 +55,11 @@ class Request(val method: Method, val targetUrl: String, val path: Option[Path] 
      * The cookies provided with the request. All keys are cookie names in lower case letters
      */
     val cookies = rawCookies.map { cookie => (cookie.name.toLowerCase(), cookie) }.toMap
-    /**
+    /*
      * The file uploads provided with the request. All keys are parameter / part names in lower case 
      * letters
      */
-    val fileUploads = rawFileUploads.map { upload => (upload.name.toLowerCase(), upload) }.toMap
+    //val fileUploads = rawFileUploads.map { upload => (upload.name.toLowerCase(), upload) }.toMap
     
     
     // IMPLEMENTED METHODS / PROPERTIES    -----
