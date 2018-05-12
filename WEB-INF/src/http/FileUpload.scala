@@ -4,6 +4,7 @@ import java.nio.file
 import java.io.InputStream
 import java.io.FileInputStream
 import scala.util.Try
+import utopia.access.http.ContentType
 
 
 /**

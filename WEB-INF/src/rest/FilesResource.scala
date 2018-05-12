@@ -1,5 +1,6 @@
 package rest
 
+import utopia.access.http.Method._
 import collection.JavaConverters._
 import utopia.flow.generic.ValueConversions._
 import utopia.flow.util.NullSafe._
@@ -7,11 +8,8 @@ import utopia.flow.datastructure.template
 import utopia.flow.datastructure.immutable
 import java.nio.file
 
-import http.Method.Get
 import http.Path
-import http.Headers
 import utopia.flow.datastructure.template.Property
-import http.Cookie
 import http.ServerSettings
 import http.Request
 import http.Response
@@ -20,16 +18,14 @@ import java.nio.file.Files
 import http.FileUpload
 import scala.util.Try
 import scala.util.Failure
-import http.BadRequest
-import http.InternalServerError
 import utopia.flow.datastructure.immutable.Model
-import http.Method.Post
-import http.MethodNotAllowed
-import http.Created
-import http.OK
-import http.NotFound
-import http.Forbidden
-import http.Method.Delete
+import utopia.access.http.MethodNotAllowed
+import utopia.access.http.NotFound
+import utopia.access.http.BadRequest
+import utopia.access.http.Forbidden
+import utopia.access.http.OK
+import utopia.access.http.InternalServerError
+import utopia.access.http.Created
 
 /**
  * This resource is used for uploading and retrieving file data.<br>

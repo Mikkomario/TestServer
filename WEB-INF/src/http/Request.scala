@@ -10,6 +10,9 @@ import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
 import scala.collection.immutable.Map
 import scala.collection.immutable.HashMap
+import utopia.access.http.Method
+import utopia.access.http.Cookie
+import utopia.access.http.Headers
 
 /*
 object Request extends FromModelFactory[Request]

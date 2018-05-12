@@ -1,5 +1,7 @@
 package http
 
+import utopia.access.http.ContentCategory._
+
 import java.io.PrintWriter
 import utopia.flow.datastructure.template.Model
 import utopia.flow.datastructure.template.Property
@@ -7,10 +9,14 @@ import java.io.OutputStream
 import java.nio.file
 import java.nio.file.Files
 import utopia.flow.datastructure.immutable
-import http.ContentCategory.Application
 import java.nio.charset.StandardCharsets
 import java.nio.charset.Charset
-import http.ContentCategory.Text
+import utopia.access.http.Status
+import utopia.access.http.OK
+import utopia.access.http.Cookie
+import utopia.access.http.Headers
+import utopia.access.http.ContentType
+import utopia.access.http.NotFound
 
 object Response
 {

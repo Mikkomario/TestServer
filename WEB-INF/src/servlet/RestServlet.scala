@@ -13,8 +13,8 @@ import rest.RequestHandler
 import http.Path
 import rest.FilesResource
 import http.Response
-import http.BadRequest
 import test.TestRestResource
+import utopia.access.http.BadRequest
 
 /**
  * This servlet offers a test implementation of a restful interface using the classes in the project

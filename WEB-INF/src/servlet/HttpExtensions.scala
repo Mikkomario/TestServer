@@ -5,20 +5,20 @@ import collection.JavaConverters._
 import javax.servlet.http.HttpServletResponse
 import http.Response
 import javax.servlet.http.HttpServletRequest
-import http.Cookie
-import http.Method
 import http.Path
 import utopia.flow.datastructure.immutable.Model
 import jdk.nashorn.internal.parser.JSONParser
 import utopia.flow.parse.JSONReader
-import http.Headers
 import utopia.flow.datastructure.immutable.Value
 import utopia.flow.generic.StringType
 import scala.util.Try
-import http.ContentType
 import http.FileUpload
 import http.Request
 import http.ServerSettings
+import utopia.access.http.Method
+import utopia.access.http.Headers
+import utopia.access.http.Cookie
+import utopia.access.http.ContentType
 
 /**
  * This object contains extensions that can be used with HttpServletRequest and HttpServletResponse 

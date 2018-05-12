@@ -10,8 +10,8 @@ import utopia.flow.generic.ValueConversions._
 import http.Response
 import java.nio.file.Paths
 import java.nio.file.Files
-import http.NotFound
 import servlet.HttpExtensions._
+import utopia.access.http.NotFound
 
 /**
  * This servlet implementation uses scala instead of java

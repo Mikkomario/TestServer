@@ -1,13 +1,7 @@
 package test
 
-import http.BadRequest
-import http.Created
-import http.Forbidden
-import http.Method.Delete
-import http.Method.Get
-import http.Method.Post
-import http.Method.Put
-import http.NotImplemented
+import utopia.access.http.Method._
+
 import http.Path
 import http.Request
 import http.Response
@@ -21,6 +15,10 @@ import utopia.flow.datastructure.immutable.Model
 import utopia.flow.datastructure.template
 import utopia.flow.datastructure.template.Property
 import utopia.flow.generic.ValueConversions.ValueOfString
+import utopia.access.http.BadRequest
+import utopia.access.http.NotImplemented
+import utopia.access.http.Created
+import utopia.access.http.Forbidden
 
 private object TestRestResource
 {

@@ -4,11 +4,11 @@ import utopia.flow.generic.ValueConversions._
 import http.Request
 import http.Path
 import http.Response
-import http.MethodNotAllowed
-import http.Headers
-import http.Method
 import utopia.flow.datastructure.immutable.Model
 import http.ServerSettings
+import utopia.access.http.Headers
+import utopia.access.http.MethodNotAllowed
+import utopia.access.http.Method
 
 /**
  * This class handles a request by searching for the targeted resource and performing the right 

@@ -1,6 +1,7 @@
 package test
 
 import utopia.flow.generic.ValueConversions._
+import utopia.access.http.Method._
 
 import utopia.flow.generic.DataType
 import rest.RequestHandler
@@ -8,23 +9,18 @@ import http.Path
 import http.ServerSettings
 import java.nio.file.Paths
 import http.Request
-import http.Headers
-import http.Method
 import utopia.flow.datastructure.immutable.Model
 import utopia.flow.datastructure.immutable.Constant
 import http.Response
 import java.io.OutputStream
 import java.io.ByteArrayOutputStream
-import http.Method.Get
 import utopia.flow.parse.JSONReader
-import http.OK
-import http.NotFound
 import utopia.flow.datastructure.immutable.Value
-import http.Method.Post
-import http.Method.Put
-import http.Created
-import http.Method.Delete
 import rest.FilesResource
+import utopia.access.http.Method
+import utopia.access.http.OK
+import utopia.access.http.Created
+import utopia.access.http.NotFound
 
 /**
  * This test makes sure the rest test resource and the request handler are working

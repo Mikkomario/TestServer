@@ -1,13 +1,11 @@
 package rest
 
-import http.NotFound
 import http.Path
-import http.Status
 import http.Response
-import http.Headers
-import http.ContentCategory.Text
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
+import utopia.access.http.Status
+import utopia.access.http.NotFound
 
 /**
  * There are different types of results that can be get when following a path alongside resources. 
