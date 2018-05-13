@@ -69,6 +69,10 @@
       <servlet-name>RestServlet</servlet-name>
       <servlet-class>servlet.RestServlet</servlet-class>
    </servlet>
+	<servlet>
+		<servlet-name>EchoServlet</servlet-name>
+		<servlet-class>servlet.EchoServlet</servlet-class>
+	</servlet>
  
    <!-- Note: All <servlet> elements MUST be grouped together and
          placed IN FRONT of the <servlet-mapping> elements -->
@@ -88,5 +92,9 @@
    <servlet-mapping>
       <servlet-name>RestServlet</servlet-name>
       <url-pattern>/rest/*</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>EchoServlet</servlet-name>
+      <url-pattern>/echo/*</url-pattern>
    </servlet-mapping>
 </web-app>
