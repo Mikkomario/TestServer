@@ -10,7 +10,7 @@ import utopia.flow.generic.ValueConversions._
 import utopia.nexus.http.Response
 import java.nio.file.Paths
 import java.nio.file.Files
-import servlet.HttpExtensions._
+import utopia.nexus.servlet.HttpExtensions._
 import utopia.access.http.NotFound
 
 /**

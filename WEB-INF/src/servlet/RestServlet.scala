@@ -1,6 +1,6 @@
 package servlet
 
-import servlet.HttpExtensions._
+import utopia.nexus.servlet.HttpExtensions._
 
 import javax.servlet.http.HttpServlet
 import javax.servlet.annotation.MultipartConfig

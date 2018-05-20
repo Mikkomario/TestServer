@@ -14,7 +14,7 @@ import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 import javax.servlet.annotation.MultipartConfig
-import servlet.HttpExtensions._
+import utopia.nexus.servlet.HttpExtensions._
 import utopia.nexus.http.ServerSettings
 import java.nio.file.Paths
 import utopia.flow.datastructure.mutable
