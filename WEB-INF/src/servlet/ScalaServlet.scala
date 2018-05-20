@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletResponse
 import utopia.flow.datastructure.immutable.Model
 import utopia.flow.generic.ValueConversions._
 import java.time.Instant
-import http.Response
+import utopia.nexus.http.Response
 import utopia.flow.generic.DataType
 import utopia.flow.generic.StringType
 import collection.JavaConverters._

@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import utopia.flow.generic.ValueConversions._
 import java.time.Instant
-import http.Response
+import utopia.nexus.http.Response
 import utopia.flow.generic.DataType
 import utopia.flow.generic.StringType
 import collection.JavaConverters._
@@ -15,11 +15,11 @@ import scala.util.Success
 import scala.util.Failure
 import javax.servlet.annotation.MultipartConfig
 import servlet.HttpExtensions._
-import http.ServerSettings
+import utopia.nexus.http.ServerSettings
 import java.nio.file.Paths
 import utopia.flow.datastructure.mutable
 import utopia.flow.datastructure.immutable.Model
-import http.Body
+import utopia.nexus.http.Body
 
 /**
  * This servlet implementation responds with data collected from the request

@@ -7,12 +7,12 @@ import javax.servlet.annotation.MultipartConfig
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import utopia.flow.generic.DataType
-import http.ServerSettings
+import utopia.nexus.http.ServerSettings
 import java.nio.file.Paths
-import rest.RequestHandler
-import http.Path
-import rest.FilesResource
-import http.Response
+import utopia.nexus.rest.RequestHandler
+import utopia.nexus.http.Path
+import utopia.nexus.rest.FilesResource
+import utopia.nexus.http.Response
 import test.TestRestResource
 import utopia.access.http.BadRequest
 

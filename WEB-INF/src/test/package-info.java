@@ -1,8 +1,8 @@
 /**
- * This package contains some unit tests for the features introduced in this project
+ * This package contains testing tools
  */
 /**
  * @author Mikko Hilpinen
- * @since 21.8.2017
+ * @since 20.5.2018
  */
 package test;

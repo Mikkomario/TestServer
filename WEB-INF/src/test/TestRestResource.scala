@@ -2,14 +2,14 @@ package test
 
 import utopia.access.http.Method._
 
-import http.Path
-import http.Request
-import http.Response
-import http.ServerSettings
-import rest.Error
-import rest.Follow
-import rest.Ready
-import rest.Resource
+import utopia.nexus.http.Path
+import utopia.nexus.http.Request
+import utopia.nexus.http.Response
+import utopia.nexus.http.ServerSettings
+import utopia.nexus.rest.Error
+import utopia.nexus.rest.Follow
+import utopia.nexus.rest.Ready
+import utopia.nexus.rest.Resource
 import utopia.flow.datastructure.immutable.Constant
 import utopia.flow.datastructure.immutable.Model
 import utopia.flow.datastructure.template

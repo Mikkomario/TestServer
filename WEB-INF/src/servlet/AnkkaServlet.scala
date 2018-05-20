@@ -7,7 +7,7 @@ import utopia.flow.generic.DataType
 import utopia.flow.datastructure.immutable.Model
 import java.time.Instant
 import utopia.flow.generic.ValueConversions._
-import http.Response
+import utopia.nexus.http.Response
 import java.nio.file.Paths
 import java.nio.file.Files
 import servlet.HttpExtensions._
